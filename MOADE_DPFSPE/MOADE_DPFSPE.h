@@ -6,7 +6,7 @@
 #include "Globali.h"
 #include <string>
 #include <list>
-#include <limits>
+#include <cfloat>
 
 using namespace std;
 
