@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 	posizione = percorsoNoExt.find_last_of("/");
 	string nomeFile = percorsoNoExt.substr(posizione + 1);
 
-	percorsoNoExt = percorsoNoExt + "_" + to_string((numeroValutazioni + H + 1)) + "_" + to_string(H) + "_" + to_string(T) 
+	percorsoNoExt = percorsoNoExt + "-" + to_string((numeroValutazioni + H + 1)) + "_" + to_string(H) + "_" + to_string(T) 
 		+ "_" + to_string(alphaMin) + "_" + to_string(alphaMax) + "_" + to_string(seed);
 
 	string nomeReport = percorsoNoExt + "/" + to_string(tempo) + "-report.csv";
