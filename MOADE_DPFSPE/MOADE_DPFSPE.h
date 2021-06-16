@@ -24,7 +24,7 @@ class MOADE_DPFSPE : MOADE<Individuo>  {
 
 		MOADE_DPFSPE(string percorso);
 
-		vector<Individuo> esegui(unsigned short, unsigned short, unsigned int, double, double, double unsigned int s);
+		vector<Individuo> esegui(unsigned short, unsigned short, unsigned int, double, double, double, unsigned int s);
 		void eliminaPopolazione(vector<Individuo>&);
 		void stampa(vector<Individuo>&);
 
@@ -42,7 +42,7 @@ class MOADE_DPFSPE : MOADE<Individuo>  {
 		void valutaIndividuo(Individuo&, unsigned int&, bool = true);
 
 		void creaPopolazione(vector<Individuo>&, unsigned short);
-		void inizializzaPopolazione(vector<Individuo>&, unsigned int&, unsigned short, unsigned short, Coppia<double>&);
+		void inizializzaPopolazione(vector<Individuo>&, unsigned int&, unsigned short, unsigned short, double, double, Coppia<double>&);
 		void combina(vector<Individuo>&, unsigned short, Individuo&);
 		void aggiorna(vector<Individuo>&, unsigned short, Individuo&, Coppia<double>&, unsigned int&);
 

@@ -21,11 +21,15 @@ int main(int argc, char* argv[])
 	double Fmax = 1.;
 	double alphaMin = 0.4;
 	double alphaMax = 0.8;
-	string percorso = "C:/Users/edu4r/Desktop/test2/20_2_5.txt";
+	string percorso;
 
 	switch (argc) {
+		case 8:
+			seed = stoi(argv[7]);
+		case 7:
+			alphaMax = stoi(argv[6]);
 		case 6:
-			seed = stoi(argv[5]);
+			alphaMin = stoi(argv[5]);
 		case 5:
 			T = stoi(argv[4]);
 		case 4:
@@ -36,8 +40,8 @@ int main(int argc, char* argv[])
 			percorso = argv[1];
 			break;
 		case 1:
-			cerr << "run with params [instance_path] [evaluations*] [H*] [T*] [seed*]" << endl;
-			//exit(-1);
+			cerr << "run with params [instance_path] [evaluations*] [H*] [T*] [AlphaMin*] [AlphaMax*] [seed*]" << endl;
+			exit(-1);
 			break;
 	}
 
@@ -56,7 +60,7 @@ int main(int argc, char* argv[])
 	string nomeFile = percorsoNoExt.substr(posizione + 1);
 
 	percorsoNoExt = percorsoNoExt + "_" + to_string((numeroValutazioni + H + 1)) + "_" + to_string(H) + "_" + to_string(T) 
-		+ "_" + to_string(seed);
+		+ "_" + to_string(alphaMin) + "_" + to_string(alphaMax) + "_" + to_string(seed);
 
 	string nomeReport = percorsoNoExt + "/" + to_string(tempo) + "-report.csv";
 
@@ -67,8 +71,8 @@ int main(int argc, char* argv[])
 
 	if (file.is_open()) {
 		
-		file << "Evaluations;H;T;Fmax;seed;Time" << endl;
-		file << numeroValutazioni + (H+1) << ";" << H << ";" << T << ";" << Fmax << ";" << seed  << ";" << durata.count() << endl << endl;
+		file << "Evaluations;H;T;Fmax; Alpha Min;Alpha Max;seed;Time" << endl;
+		file << numeroValutazioni + (H + 1) << ";" << H << ";" << T << ";" << Fmax << ";" << alphaMin << ";" << alphaMax << ";" << seed << ";" << durata.count() << endl << endl;
 
 		for (unsigned short i = 0; i < risultato.size(); i++) {
 			file << risultato[i].punteggio.x << ";";

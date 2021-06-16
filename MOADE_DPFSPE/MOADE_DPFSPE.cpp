@@ -32,24 +32,25 @@ void MOADE_DPFSPE::creaPopolazione(vector<Individuo>& popolazione, unsigned shor
 	}
 }
 
-void MOADE_DPFSPE::inizializzaPopolazione(vector<Individuo>& popolazione, unsigned int& valutazioniEffettuate, unsigned short H, unsigned short T, Coppia<double>& migliori) {
+void MOADE_DPFSPE::inizializzaPopolazione(vector<Individuo>& popolazione, unsigned int& valutazioniEffettuate, unsigned short H, unsigned short T, 
+	double alphaMin, double alphaMax, Coppia<double>& migliori) {
 
 	GruppoPDZN* rappresentazione;
 
 	popolazione[0].rappresentazione->modulo2->identita();
-	popolazione[0].alpha = 0.4;
+	popolazione[0].alpha = alphaMin;
 	popolazione[0].simili.reserve(T);
 	ENEH(popolazione[0], valutazioniEffettuate);
 
 	popolazione[popolazione.size() - 1].rappresentazione->modulo2->massimo();
-	popolazione[popolazione.size() - 1].alpha = 0.8;
+	popolazione[popolazione.size() - 1].alpha = alphaMax;
 	popolazione[popolazione.size() - 1].simili.reserve(T);
 	ENEH(popolazione[popolazione.size() - 1], valutazioniEffettuate);
 
 
 	for (unsigned short i = 1; i < popolazione.size() - 1; i++) {
 		popolazione[i].rappresentazione->modulo2->random();
-		popolazione[i].alpha = 0.4 + (0.4 * (double)i / H);
+		popolazione[i].alpha = alphaMin + ((alphaMax - alphaMin) * (double)i / H);
 		popolazione[i].simili.reserve(T);
 		ENEH(popolazione[i], valutazioniEffettuate);
 	}

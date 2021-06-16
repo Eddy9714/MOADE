@@ -13,7 +13,7 @@ template <class T> class MOADE {
 		unsigned int seed;
 
 		virtual void creaPopolazione(vector<T>&, unsigned short) = 0;
-		virtual void inizializzaPopolazione(vector<T>&, unsigned int&, unsigned short, unsigned short, Coppia<double>&) = 0;
+		virtual void inizializzaPopolazione(vector<T>&, unsigned int&, unsigned short, unsigned short, double, double, Coppia<double>&) = 0;
 		virtual void eliminaPopolazione(vector<T>&) = 0;
 		virtual void combina(vector<T>&, unsigned short, T&) = 0;
 		virtual void aggiorna(vector<T>&, unsigned short, T&, Coppia<double>&, unsigned int&) = 0;
@@ -49,7 +49,7 @@ template <class T> class MOADE {
 			creaPopolazione(popolazione, nIndividui);
 			creaPopolazione(figlio, 1);
 
-			inizializzaPopolazione(popolazione, valutazioniEffettuate, H, Tsize, migliori);
+			inizializzaPopolazione(popolazione, valutazioniEffettuate, H, Tsize, alphaMin, alphaMax, migliori);
 
 			while (valutazioniEffettuate < numeroValutazioni) {
 				numeroGenerazioni++;
