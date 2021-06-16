@@ -1,15 +1,11 @@
 #include "Main.h"
 
-#include "Istanza.h"
-#include "PermutazioneI.h"
-#include "Modulo.h"
-#include <experimental/filesystem>
-
 using namespace std;
-using chrono::milliseconds;
+using chrono::microseconds;
 using chrono::system_clock;
 using chrono::duration_cast;
 
+//namespace fs = filesystem;
 namespace fs = experimental::filesystem;
 
 int main(int argc, char* argv[])
@@ -56,7 +52,7 @@ int main(int argc, char* argv[])
 	int posizione = percorso.find_last_of(".");
 	string percorsoNoExt = percorso.substr(0, posizione);
 
-	auto tempo = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+	auto tempo = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
 	posizione = percorsoNoExt.find_last_of("/");
 	string nomeFile = percorsoNoExt.substr(posizione + 1);
 

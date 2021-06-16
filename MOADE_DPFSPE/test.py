@@ -62,7 +62,7 @@ def main(argv):
         trialsRemaining = trialsPerIstance
 
         for i in range(trialsRemaining):
-            procs.append(Popen(command, stdout=DEVNULL, stderr=DEVNULL))
+            procs.append(Popen(command, stdout=DEVNULL, stderr=DEVNULL, shell=True))
             processorsAvailable = processorsAvailable - 1
 
             if processorsAvailable == 0:
