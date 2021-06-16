@@ -6,6 +6,7 @@
 #include "Globali.h"
 #include <string>
 #include <list>
+#include <limits>
 
 using namespace std;
 
