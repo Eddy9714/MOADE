@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 	percorsoNoExt = percorsoNoExt + "-" + to_string((numeroValutazioni + H + 1)) + "_" + to_string(H) + "_" + to_string(T) 
 		+ "_" + to_string(alphaMin) + "_" + to_string(alphaMax) + "_" + to_string(seed);
 
-	string nomeReport = percorsoNoExt + "/" + to_string(tempo) + "-report.csv";
+	string nomeReport = percorsoNoExt + "/" + to_string(tempo) + to_string(genRand.randIntU(0, 10000000)) + "-report.csv";
 
 	if (!fs::exists(percorsoNoExt))
 		fs::create_directory(percorsoNoExt);
