@@ -3,13 +3,14 @@
 #include "Istanza.h"
 #include "PermutazioneI.h"
 #include "Modulo.h"
-#include <filesystem>
+#include <experimental/filesystem>
 
 using namespace std;
 using chrono::milliseconds;
 using chrono::system_clock;
 using chrono::duration_cast;
 
+namespace fs = experimental::filesystem;
 
 int main(int argc, char* argv[])
 {
@@ -64,8 +65,8 @@ int main(int argc, char* argv[])
 
 	string nomeReport = percorsoNoExt + "/" + to_string(tempo) + "-report.csv";
 
-	if (!filesystem::exists(percorsoNoExt))
-		filesystem::create_directory(percorsoNoExt);
+	if (!fs::exists(percorsoNoExt))
+		fs::create_directory(percorsoNoExt);
 
 	ofstream file(nomeReport, ios_base::app);
 
