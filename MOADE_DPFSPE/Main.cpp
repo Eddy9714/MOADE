@@ -16,8 +16,8 @@ int main(int argc, char* argv[])
 	unsigned short T = 10;
 	unsigned int numeroValutazioni = 100000 - (H + 1);
 	double Fmax = 1.;
-	double alphaMin = 0.3;
-	double alphaMax = 0.7;
+	double alphaMin = 0.4;
+	double alphaMax = 0.6;
 	string percorso;
 
 	switch (argc) {
