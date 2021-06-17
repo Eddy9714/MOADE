@@ -10,11 +10,11 @@ Istanza::Istanza(string percorso) {
 	if (file.is_open()) {
 		file >> lavori >> fabbriche >> macchine;
 
-		tp = new double* [lavori];
-		s = new double* [lavori];
+		tp = new unsigned short* [lavori];
+		s = new unsigned short* [lavori];
 
-		pi = new unsigned short[macchine];
-		ps = new unsigned short[macchine];
+		pi = new double[macchine];
+		ps = new double[macchine];
 
 		velocita = new double[5];
 		consumoPerVelocita = new double[5];
@@ -29,14 +29,14 @@ Istanza::Istanza(string percorso) {
 		}
 
 		for (unsigned short i = 0; i < lavori; i++) {
-			tp[i] = new double[macchine];
+			tp[i] = new unsigned short[macchine];
 			for (unsigned short m = 0; m < macchine; m++) {
 				file >> tp[i][m];
 			}
 		}
 
 		for (unsigned short i = 0; i < lavori; i++) {
-			s[i] = new double[macchine];
+			s[i] = new unsigned short[macchine];
 			for (unsigned short m = 0; m < macchine; m++) {
 				file >> s[i][m];
 			}

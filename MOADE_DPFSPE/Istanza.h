@@ -14,11 +14,11 @@ class Istanza {
 		unsigned short lavori;
 		unsigned short nVelocita = 5;
 
-		double** tp; //tempi lavorazione
-		double** s; //tempi di setup
+		unsigned short** tp; //tempi lavorazione
+		unsigned short** s; //tempi di setup
 
-		unsigned short* pi; //potenza idle
-		unsigned short* ps; //potenza setup
+		double* pi; //potenza idle
+		double* ps; //potenza setup
 
 		double* consumoPerVelocita;
 		double* velocita;
