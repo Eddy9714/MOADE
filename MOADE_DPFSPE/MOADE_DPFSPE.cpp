@@ -145,7 +145,7 @@ void MOADE_DPFSPE::valutaIndividuo(Individuo& individuo, unsigned int& valutazio
 
 	if (conta) valutazioniEffettuate++;
 
-	vector<Coppia<unsigned short>> infoFabbriche = calcolaInfoFabbriche(g);
+	vector<Coppia<unsigned short>> infoFabbriche = calcolaPosFabbriche(g);
 	Coppia<double> coppia, risultato = { 0., 0. };
 
 	for (unsigned short i = 0; i < infoFabbriche.size(); i++) {
@@ -201,171 +201,199 @@ Coppia<double> MOADE_DPFSPE::valutaIndividuoParziale(GruppoPDZN* g, unsigned sho
 	return { makeSpan , energiaConsumata};
 }
 
-vector<Coppia<unsigned short>> MOADE_DPFSPE::calcolaInfoFabbriche(GruppoPDZN* g) {
 
-	vector<Coppia<unsigned short>> infoFabbriche;
-	infoFabbriche.reserve(istanza.fabbriche);
 
-	unsigned short pos = 0, lunghezza;
+void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& valutazioniEffettuate) {
 
-	Modulo* m = g->modulo1;
+	for (unsigned short i = 0; i < popolazione.size(); i++) {
+		GruppoPDZN* g = popolazione[i].rappresentazione;
 
-	for (unsigned short i = 0; i < m->dimensione; i++) {
+		auto infoFabbriche = calcolaInfoFabbriche(g);
 
-		lunghezza = m->individuo[i] - pos + 1;
+		unsigned short indice = genRand.randIntU(0, 3);
 
-		infoFabbriche.push_back({ pos, lunghezza });
-
-		pos = m->individuo[i] + 1;
-	}
-
-	infoFabbriche.push_back({ pos, (unsigned short)(istanza.lavori - pos)});
-
-	return infoFabbriche;
-}
-
-void MOADE_DPFSPE::ricercaLocale(Individuo& individuo, unsigned int& valutazioniEffettuate) {
-
-	GruppoPDZN* g = individuo.rappresentazione;
-
-	vector<Coppia<unsigned short>> infoFabbriche = calcolaInfoFabbriche(g);
-	unsigned short indice = genRand.randIntU(0, 3);
-
-	switch (indice) {
+		switch (indice) {
 		case 0:
 			//Inserzione intra-fabbrica peggiore rispetto al makespan
-			IFLSI(individuo, infoFabbriche, valutazioniEffettuate);
+			IFLSI(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
 			break;
 		case 1:
 			//Swap intra-fabbrica peggiore rispetto al makespan
-			IFLSS(individuo, infoFabbriche, valutazioniEffettuate);
+			IFLSS(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
 			break;
 		case 2:
 			//Inserzione extra-fabbrica peggiore rispetto al makespan
-			EWFLSI(individuo, infoFabbriche, valutazioniEffettuate);
+			EWFLSI(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
 			break;
 		case 3:
 			//Swap extra-fabbrica peggiore rispetto al makespan
-			EWFLSS(individuo, infoFabbriche, valutazioniEffettuate);
+			EWFLSS(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
 			break;
+		}
 	}
+
 }
 
-void MOADE_DPFSPE::IFLSI(Individuo& individuo, vector<Coppia<unsigned short>>& infoFabbriche, unsigned int& valutazioniEffettuate) {
+void MOADE_DPFSPE::IFLSI(Individuo& individuo, CoppiaM<vector<InfoFabbrica>, unsigned short>& infoFabbriche, 
+	unsigned int& valutazioniEffettuate, bool dominazioneRichiesta) {
 
 	GruppoPDZN* g = individuo.rappresentazione;
 
-	CoppiaM<unsigned short, double> infoFabbricaPeggiore = trovaFabbricaPeggiore(g, infoFabbriche);
+	InfoFabbrica& infoFabbricaPeggiore = infoFabbriche.x[infoFabbriche.y];
+	auto coordinateFabbricaPeggiore = infoFabbricaPeggiore.coordinate;
 
-	Coppia<unsigned short>* fabbricaPeggiore = &infoFabbriche[infoFabbricaPeggiore.x];
-
-	unsigned short ran = genRand.randIntU(0, fabbricaPeggiore->y - 1);
-	unsigned short posLavoro = fabbricaPeggiore->x + ran;
+	unsigned short ran = genRand.randIntU(0, infoFabbricaPeggiore.coordinate.y - 1);
+	unsigned short posLavoro = infoFabbricaPeggiore.coordinate.x + ran;
 	unsigned short nuovoPosLavoro;
 	unsigned short lavoro = g->permutazione->individuo[posLavoro];
 	//rimuovi elemento in posizione i e trova la migliore posizione possibile
 
-	if (ran >= fabbricaPeggiore->y / 2) {
-		unsigned short posizioniDaCopiare = fabbricaPeggiore->y - ran - 1;
+	if (ran >= coordinateFabbricaPeggiore.y / 2) {
+		unsigned short posizioniDaCopiare = coordinateFabbricaPeggiore.y - ran - 1;
 
 		if(posizioniDaCopiare > 0)
 			memcpy(g->permutazione->individuo + posLavoro, g->permutazione->individuo + posLavoro + 1,
 				sizeof(unsigned short) * posizioniDaCopiare);
 
-		InfoInserzione info = miglioreInserzione(g, fabbricaPeggiore->x, fabbricaPeggiore->y - 1, lavoro);
+		auto info = miglioreInserzione(g, coordinateFabbricaPeggiore.x, coordinateFabbricaPeggiore.y - 1, lavoro);
 
-		nuovoPosLavoro = fabbricaPeggiore->x + info.posizione;
+		nuovoPosLavoro = coordinateFabbricaPeggiore.x + info.y;
 
 		memcpy(g->permutazione->individuo + nuovoPosLavoro + 1, g->permutazione->individuo + nuovoPosLavoro, sizeof(unsigned short) *
-			(fabbricaPeggiore->y - 1 - info.posizione));
-
-		g->permutazione->individuo[nuovoPosLavoro] = lavoro;
-
-		if (nuovoPosLavoro != posLavoro) {
-			valutaIndividuo(individuo, valutazioniEffettuate);
-		}
-		else valutazioniEffettuate++;
+			(coordinateFabbricaPeggiore.y - 1 - info.y));
 	}
 	else {
 
 		if (ran > 0)
-			memcpy(g->permutazione->individuo + fabbricaPeggiore->x + 1, g->permutazione->individuo + fabbricaPeggiore->x,
+			memcpy(g->permutazione->individuo + coordinateFabbricaPeggiore.x + 1, g->permutazione->individuo + coordinateFabbricaPeggiore.x,
 				sizeof(unsigned short) * ran);
 
-		InfoInserzione info = miglioreInserzione(g, fabbricaPeggiore->x + 1, fabbricaPeggiore->y - 1, lavoro);
+		auto info = miglioreInserzione(g, coordinateFabbricaPeggiore.x + 1, coordinateFabbricaPeggiore.y - 1, lavoro);
 
-		nuovoPosLavoro = fabbricaPeggiore->x + info.posizione;
+		nuovoPosLavoro = coordinateFabbricaPeggiore.x + info.y;
 
-
-		memcpy(g->permutazione->individuo + fabbricaPeggiore->x, g->permutazione->individuo + fabbricaPeggiore->x + 1, sizeof(unsigned short) *
-			(info.posizione));
-
-		g->permutazione->individuo[nuovoPosLavoro] = lavoro;
-
-		if (nuovoPosLavoro != posLavoro) valutaIndividuo(individuo, valutazioniEffettuate);
-		else valutazioniEffettuate++;
+		memcpy(g->permutazione->individuo + coordinateFabbricaPeggiore.x, g->permutazione->individuo + coordinateFabbricaPeggiore.x + 1, sizeof(unsigned short) *
+			(info.y));
 	}
+
+	g->permutazione->individuo[nuovoPosLavoro] = lavoro;
+
+	if (nuovoPosLavoro != posLavoro) {
+		auto valutazione =
+			valutaIndividuoParziale(individuo.rappresentazione, coordinateFabbricaPeggiore.x, coordinateFabbricaPeggiore.y);
+
+		double variazioneEnergia = (valutazione.y - infoFabbricaPeggiore.valutazione.y);
+
+		if (dominazioneRichiesta && variazioneEnergia > 0) {
+			//rollback
+			//rimuovi da nuovoPosLavoro e inserisci in posLavoro
+			if (posLavoro < nuovoPosLavoro) {
+				memcpy(g->permutazione->individuo + posLavoro + 1, g->permutazione->individuo + posLavoro,
+					sizeof(unsigned short) * (nuovoPosLavoro - posLavoro));
+			}
+			else {
+				memcpy(g->permutazione->individuo + nuovoPosLavoro, g->permutazione->individuo + nuovoPosLavoro + 1,
+					sizeof(unsigned short) * (posLavoro - nuovoPosLavoro));
+			}
+
+			g->permutazione->individuo[posLavoro] = lavoro;
+		}
+		else {
+			individuo.punteggio.y += variazioneEnergia;
+			infoFabbricaPeggiore.valutazione = valutazione;
+
+			double makespanPeggiore = 0, makespan;
+			for (unsigned short i = 0; i < infoFabbriche.x.size(); i++) {
+				makespan = infoFabbriche.x[i].valutazione.x;
+				if (makespan > makespanPeggiore) {
+					makespanPeggiore = makespan;
+					individuo.punteggio.x = makespanPeggiore;
+				}
+			}
+		}
+	}
+
+	valutazioniEffettuate++;
 }
 
-void MOADE_DPFSPE::IFLSS(Individuo& individuo, vector<Coppia<unsigned short>>& infoFabbriche, unsigned int& valutazioniEffettuate) {
+void MOADE_DPFSPE::IFLSS(Individuo& individuo, CoppiaM<vector<InfoFabbrica>, unsigned short>& infoFabbriche, 
+	unsigned int& valutazioniEffettuate, bool dominanzaRichiesta) {
 
 	GruppoPDZN* g = individuo.rappresentazione;
 
-	CoppiaM<unsigned short, double> infoFabbricaPeggiore = trovaFabbricaPeggiore(g, infoFabbriche);
-	Coppia<unsigned short>* fabbricaPeggiore = &infoFabbriche[infoFabbricaPeggiore.x];
+	InfoFabbrica& infoFabbricaPeggiore = infoFabbriche.x[infoFabbriche.y];
+	auto coordinateFabbricaPeggiore = infoFabbricaPeggiore.coordinate;
 
-	if (fabbricaPeggiore->y < 2) return;
+	if (coordinateFabbricaPeggiore.y < 2) return;
 
 	int i1, i2;
-	genRand.dueIndiciRandom(fabbricaPeggiore->y, i1, i2);
+	genRand.dueIndiciRandom(coordinateFabbricaPeggiore.y, i1, i2);
 
-	i1 += fabbricaPeggiore->x;
-	i2 += fabbricaPeggiore->x;
+	i1 += coordinateFabbricaPeggiore.x;
+	i2 += coordinateFabbricaPeggiore.x;
 
 	unsigned short tmp = g->permutazione->individuo[i1];
 	g->permutazione->individuo[i1] = g->permutazione->individuo[i2];
 	g->permutazione->individuo[i2] = tmp;
 
-	Coppia<double> valutazione = valutaIndividuoParziale(g, fabbricaPeggiore->x, fabbricaPeggiore->y);
+	Coppia<double> valutazione = valutaIndividuoParziale(g, coordinateFabbricaPeggiore.x, coordinateFabbricaPeggiore.y);
+	double variazioneEnergia = (valutazione.y - infoFabbricaPeggiore.valutazione.y);
 
-	if (valutazione.x > infoFabbricaPeggiore.y) {
+	if (valutazione.x > infoFabbricaPeggiore.valutazione.x || (dominanzaRichiesta && variazioneEnergia > 0)) {
 		tmp = g->permutazione->individuo[i1];
 		g->permutazione->individuo[i1] = g->permutazione->individuo[i2];
-		g->permutazione->individuo[i2] = tmp;
-
-		valutazioniEffettuate++;
+		g->permutazione->individuo[i2] = tmp;		
 	}
-	else valutaIndividuo(individuo, valutazioniEffettuate);
+	else {
+
+		individuo.punteggio.y += variazioneEnergia;
+		infoFabbricaPeggiore.valutazione = valutazione;
+
+		double makespanPeggiore = 0, makespan;
+		for (unsigned short i = 0; i < infoFabbriche.x.size(); i++) {
+			makespan = infoFabbriche.x[i].valutazione.x;
+			if (makespan > makespanPeggiore) {
+				makespanPeggiore = makespan;
+				individuo.punteggio.x = makespanPeggiore;
+			}
+		}
+	}
+
+	valutazioniEffettuate++;
 }
 
-void MOADE_DPFSPE::EWFLSI(Individuo& individuo, vector<Coppia<unsigned short>>& infoFabbriche, unsigned int& valutazioniEffettuate) {
+void MOADE_DPFSPE::EWFLSI(Individuo& individuo, CoppiaM<vector<InfoFabbrica>, unsigned short>& infoFabbriche, 
+	unsigned int& valutazioniEffettuate, bool dominanzaRichiesta) {
 
 	GruppoPDZN* g = individuo.rappresentazione;
 
-	CoppiaM<unsigned short, double> infoFabbricaPeggiore = trovaFabbricaPeggiore(g, infoFabbriche);
-	Coppia<unsigned short>* fabbricaPeggiore = &infoFabbriche[infoFabbricaPeggiore.x];
+	InfoFabbrica& infoFabbricaPeggiore = infoFabbriche.x[infoFabbriche.y];
+	auto& coordinateFabbricaPeggiore = infoFabbricaPeggiore.coordinate;
 
-	unsigned short fabbricaScelta = genRand.randIntU(0, istanza.fabbriche - 2);
+	unsigned short indiceFabbricaScelta = genRand.randIntU(0, istanza.fabbriche - 2);
 
-	if (fabbricaScelta >= infoFabbricaPeggiore.x)
-		fabbricaScelta++;
+	if (indiceFabbricaScelta >= infoFabbriche.y)
+		indiceFabbricaScelta++;
 
-	unsigned short ran = genRand.randIntU(0, fabbricaPeggiore->y - 1);
-	unsigned short posLavoro = fabbricaPeggiore->x + ran;
+	InfoFabbrica& infoFabbricaScelta = infoFabbriche.x[indiceFabbricaScelta];
+	auto& coordinateFabbricaScelta = infoFabbricaScelta.coordinate;
+
+	unsigned short ran = genRand.randIntU(0, coordinateFabbricaPeggiore.y - 1);
+	unsigned short posLavoro = coordinateFabbricaPeggiore.x + ran;
 	unsigned short lavoro = g->permutazione->individuo[posLavoro];
 
-	InfoInserzione info = miglioreInserzione(g, infoFabbriche[fabbricaScelta].x, infoFabbriche[fabbricaScelta].y, lavoro);
+	auto info = miglioreInserzione(g, coordinateFabbricaScelta.x, coordinateFabbricaScelta.y, lavoro);
 
-	if (info.makeSpan <= infoFabbricaPeggiore.y) {
+	if (info.x <= infoFabbricaPeggiore.valutazione.x) {
 
 		//Verifichiamo che il makespan della fabbrica peggiore non sia peggiorato
-		Coppia<double> val = valutaIndividuoParziale(g, fabbricaPeggiore->x, fabbricaPeggiore->y, ran);
+		Coppia<double> val = valutaIndividuoParziale(g, coordinateFabbricaPeggiore.x, coordinateFabbricaPeggiore.y, ran);
 
-		if (val.x <= infoFabbricaPeggiore.y) {
-
+		if (val.x <= infoFabbricaPeggiore.valutazione.x) {
+			
 			//applica modifiche
 
-			unsigned short nuovoPosLavoro = infoFabbriche[fabbricaScelta].x + info.posizione;
+			unsigned short nuovoPosLavoro = coordinateFabbricaScelta.x + info.y;
 
 			if (posLavoro < nuovoPosLavoro) {
 				nuovoPosLavoro--;
@@ -375,9 +403,11 @@ void MOADE_DPFSPE::EWFLSI(Individuo& individuo, vector<Coppia<unsigned short>>& 
 
 				g->permutazione->individuo[nuovoPosLavoro] = lavoro;
 
-				for (unsigned short k = infoFabbricaPeggiore.x; k < fabbricaScelta; k++) {
+				for (unsigned short k = infoFabbriche.y; k < indiceFabbricaScelta; k++) {
 					g->modulo1->individuo[k]--;
 				}
+
+				coordinateFabbricaScelta.x--;
 			}
 			else {
 				memcpy(g->permutazione->individuo + nuovoPosLavoro + 1, g->permutazione->individuo + nuovoPosLavoro,
@@ -385,54 +415,130 @@ void MOADE_DPFSPE::EWFLSI(Individuo& individuo, vector<Coppia<unsigned short>>& 
 
 				g->permutazione->individuo[nuovoPosLavoro] = lavoro;
 
-				for (unsigned short k = fabbricaScelta; k < infoFabbricaPeggiore.x; k++) {
+				for (unsigned short k = indiceFabbricaScelta; k < infoFabbriche.y; k++) {
 					g->modulo1->individuo[k]++;
 				}
+
 			}
+
+			coordinateFabbricaPeggiore.y--;
+			coordinateFabbricaScelta.y++;
+
+			auto val2 = valutaIndividuoParziale(g, coordinateFabbricaScelta.x, coordinateFabbricaScelta.y);
 			
-			valutaIndividuo(individuo, valutazioniEffettuate);
+			double variazioneEnergia = (val.y - infoFabbricaPeggiore.valutazione.y) + (val2.y - infoFabbricaScelta.valutazione.y);
+
+
+			if (dominanzaRichiesta && variazioneEnergia > 0) {
+				//rollback
+				if (posLavoro < nuovoPosLavoro) {
+					memcpy(g->permutazione->individuo + posLavoro + 1, g->permutazione->individuo + posLavoro,
+						sizeof(unsigned short) * (nuovoPosLavoro - posLavoro));
+
+					g->permutazione->individuo[posLavoro] = lavoro;
+
+					for (unsigned short k = infoFabbriche.y; k < indiceFabbricaScelta; k++) {
+						g->modulo1->individuo[k]++;
+					}
+				}
+				else {
+
+					memcpy(g->permutazione->individuo + nuovoPosLavoro, g->permutazione->individuo + nuovoPosLavoro + 1,
+						sizeof(unsigned short) * (posLavoro - nuovoPosLavoro));
+
+					g->permutazione->individuo[posLavoro] = lavoro;
+
+					for (unsigned short k = indiceFabbricaScelta; k < infoFabbriche.y; k++) {
+						g->modulo1->individuo[k]--;
+					}
+
+					coordinateFabbricaScelta.x++;
+				}
+
+				coordinateFabbricaPeggiore.y++;
+				coordinateFabbricaScelta.y--;
+			}
+			else {
+				individuo.punteggio.y += variazioneEnergia;
+
+				infoFabbricaPeggiore.valutazione = val;
+				infoFabbricaScelta.valutazione = val2;
+
+				double makespanPeggiore = 0, makespan;
+				for (unsigned short i = 0; i < infoFabbriche.x.size(); i++) {
+					makespan = infoFabbriche.x[i].valutazione.x;
+					if (makespan > makespanPeggiore) {
+						makespanPeggiore = makespan;
+						individuo.punteggio.x = makespanPeggiore;
+					}
+				}
+			}
 		}
-		else valutazioniEffettuate++;
 	}
-	else valutazioniEffettuate++;
+	valutazioniEffettuate++;
 }
 
-void MOADE_DPFSPE::EWFLSS(Individuo& individuo, vector<Coppia<unsigned short>>& infoFabbriche, unsigned int& valutazioniEffettuate) {
+void MOADE_DPFSPE::EWFLSS(Individuo& individuo, CoppiaM<vector<InfoFabbrica>, unsigned short>& infoFabbriche, 
+	unsigned int& valutazioniEffettuate, bool dominazioneRichiesta) {
 
 	GruppoPDZN* g = individuo.rappresentazione;
 
-	CoppiaM<unsigned short, double> infoFabbricaPeggiore = trovaFabbricaPeggiore(g, infoFabbriche);
-	Coppia<unsigned short>* fabbricaPeggiore = &infoFabbriche[infoFabbricaPeggiore.x];
+	InfoFabbrica& infoFabbricaPeggiore = infoFabbriche.x[infoFabbriche.y];
+	auto coordinateFabbricaPeggiore = infoFabbricaPeggiore.coordinate;
 
-	unsigned short fabbricaScelta = genRand.randIntU(0, istanza.fabbriche - 2);
+	unsigned short indiceFabbricaScelta = genRand.randIntU(0, istanza.fabbriche - 2);
 
-	if (fabbricaScelta >= infoFabbricaPeggiore.x)
-		fabbricaScelta++;
+	if (indiceFabbricaScelta >= infoFabbriche.y)
+		indiceFabbricaScelta++;
 
-	if (infoFabbriche[fabbricaScelta].y == 0) return;
+	InfoFabbrica& infoFabbricaScelta = infoFabbriche.x[indiceFabbricaScelta];
+	auto coordinateFabbricaScelta = infoFabbricaScelta.coordinate;
+
+	if (coordinateFabbricaScelta.y == 0) return;
 
 	unsigned short posLavoroFabbricaPeggiore = 
-		fabbricaPeggiore->x + genRand.randIntU(0, fabbricaPeggiore->y - 1);
+		coordinateFabbricaPeggiore.x + genRand.randIntU(0, coordinateFabbricaPeggiore.y - 1);
 
-	unsigned short posLavoroFabbricaScelta = infoFabbriche[fabbricaScelta].x + 
-		genRand.randIntU(0, infoFabbriche[fabbricaScelta].y - 1);
+	unsigned short posLavoroFabbricaScelta = coordinateFabbricaScelta.x +
+		genRand.randIntU(0, coordinateFabbricaScelta.y - 1);
 
 	//Scambia lavori
 	unsigned short tmp = g->permutazione->individuo[posLavoroFabbricaPeggiore];
 	g->permutazione->individuo[posLavoroFabbricaPeggiore] = g->permutazione->individuo[posLavoroFabbricaScelta];
 	g->permutazione->individuo[posLavoroFabbricaScelta] = tmp;
 
-	Coppia<double> val1 = valutaIndividuoParziale(g, fabbricaPeggiore->x, fabbricaPeggiore->y);
-	Coppia<double> val2 = valutaIndividuoParziale(g, infoFabbriche[fabbricaScelta].x, infoFabbriche[fabbricaScelta].y);
+	Coppia<double> val1 = valutaIndividuoParziale(g, coordinateFabbricaPeggiore.x, coordinateFabbricaPeggiore.y);
+	Coppia<double> val2 = valutaIndividuoParziale(g, coordinateFabbricaScelta.x, coordinateFabbricaScelta.y);
 
-	if (val1.x > infoFabbricaPeggiore.y || val2.x > infoFabbricaPeggiore.y) {
+	double variazioneEnergia = (val1.y - infoFabbricaPeggiore.valutazione.y) + (val2.y - infoFabbricaScelta.valutazione.y);
+
+	if (val1.x > infoFabbricaPeggiore.valutazione.x || val2.x > infoFabbricaPeggiore.valutazione.x 
+		|| (dominazioneRichiesta && variazioneEnergia > 0)) {
 		tmp = g->permutazione->individuo[posLavoroFabbricaPeggiore];
 		g->permutazione->individuo[posLavoroFabbricaPeggiore] = g->permutazione->individuo[posLavoroFabbricaScelta];
 		g->permutazione->individuo[posLavoroFabbricaScelta] = tmp;
-
-		valutazioniEffettuate++;
 	}
-	else valutaIndividuo(individuo, valutazioniEffettuate);
+	else {
+
+		individuo.punteggio.y += variazioneEnergia;
+		infoFabbricaPeggiore.valutazione = val1;
+		infoFabbricaScelta.valutazione = val2;
+
+		double makespanPeggiore = 0, makespan;
+		for (unsigned short i = 0; i < infoFabbriche.x.size(); i++) {
+			makespan = infoFabbriche.x[i].valutazione.x;
+			if (makespan > makespanPeggiore) {
+				makespanPeggiore = makespan;
+				individuo.punteggio.x = makespanPeggiore;
+			}
+		}
+
+		cout << individuo.punteggio.x << ":" << individuo.punteggio.y << endl;
+		valutaIndividuo(individuo, valutazioniEffettuate, false);
+		cout << individuo.punteggio.x << ":" << individuo.punteggio.y << endl;
+	}
+
+	valutazioniEffettuate++;
 }
 
 
@@ -444,25 +550,25 @@ void MOADE_DPFSPE::ottimizza(vector<Individuo>& popolazione, unsigned int& numer
 
 void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroValutazioni) {
 
-	vector<Coppia<unsigned short>> infoFabbriche = calcolaInfoFabbriche(individuo.rappresentazione);
+	vector<Coppia<unsigned short>> posFabbriche = calcolaPosFabbriche(individuo.rappresentazione);
 
-	for (unsigned short i = 0; i < infoFabbriche.size(); i++) {
-		ottimizzaEnergiaParziale(individuo, infoFabbriche[i]);
+	for (unsigned short i = 0; i < posFabbriche.size(); i++) {
+		ottimizzaEnergiaParziale(individuo, posFabbriche[i]);
 	}
 
 	valutaIndividuo(individuo, numeroValutazioni);
 }
 
-void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigned short>& infoFabbrica) {
+void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche) {
 
 	unsigned short pos, vel;
 	double tempoReale, tempoEstensione, tempoDelta;
 
 	GruppoPDZN* g = individuo.rappresentazione; 
-	unsigned short* fabbrica = g->permutazione->individuo + infoFabbrica.x;
+	unsigned short* fabbrica = g->permutazione->individuo + posFabbriche.x;
 
 	for (unsigned short j = 0; j < istanza.macchine; j++) {
-		for (unsigned short i = 0; i < infoFabbrica.y; i++) {
+		for (unsigned short i = 0; i < posFabbriche.y; i++) {
 			
 			pos = fabbrica[i] * istanza.macchine + j;
 			tempoReale = istanza.tp[fabbrica[i]][j] / istanza.velocita[g->modulo2->individuo[pos]] + istanza.s[fabbrica[i]][j];
@@ -484,7 +590,7 @@ void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigne
 				o[i][j].y = o[i][j].x + tempoReale;
 			}
 
-			if (i != infoFabbrica.y - 1 && j != 0) {
+			if (i != posFabbriche.y - 1 && j != 0) {
 
 				pos = fabbrica[i] * istanza.macchine + j - 1;
 
@@ -549,25 +655,25 @@ void MOADE_DPFSPE::ENEH(Individuo& individuo, unsigned int& valutazioniEffettuat
 
 	for (unsigned short i = istanza.fabbriche; i < istanza.lavori; i++) {
 		int fMigliore = -1;
-		InfoInserzione migliore = { DBL_MAX, 0 };
+		CoppiaM<double, unsigned short> migliore = { DBL_MAX, 0 };
 
 		for (unsigned short f = 0; f < istanza.fabbriche; f++) {
 			//inserisci ordinamento[i] in ogni posizione della fabbrica ff
-			InfoInserzione info = miglioreInserzione(g, indiciFabbriche[f].x, indiciFabbriche[f].y, ordinamento[i]);
+			auto info = miglioreInserzione(g, indiciFabbriche[f].x, indiciFabbriche[f].y, ordinamento[i]);
 
 			//valuta se è stata trovata la migliore inserzione possibile fino ad ora ed eventualmente
 			//registra fabbrica e posizione migliore
-			if (info.makeSpan < migliore.makeSpan) {
+			if (info.x < migliore.x) {
 				migliore = info;
 				fMigliore = f;
 			}
 		}
 
 		//Inserisci ordinamento[i] nella posizione migliore della fabbrica migliore mai trovata
-		for (unsigned short i = lunghezzaIndividuo++; i > indiciFabbriche[fMigliore].x + migliore.posizione; i--) {
+		for (unsigned short i = lunghezzaIndividuo++; i > indiciFabbriche[fMigliore].x + migliore.y; i--) {
 			g->permutazione->individuo[i] = g->permutazione->individuo[i - 1];
 		}
-		g->permutazione->individuo[indiciFabbriche[fMigliore].x + migliore.posizione] = ordinamento[i];
+		g->permutazione->individuo[indiciFabbriche[fMigliore].x + migliore.y] = ordinamento[i];
 
 		//Aggiorna indici fabbriche
 		for (unsigned short f = fMigliore + 1; f < istanza.fabbriche; f++) {
@@ -591,7 +697,7 @@ void MOADE_DPFSPE::ENEH(Individuo& individuo, unsigned int& valutazioniEffettuat
 }
 
 
-MOADE_DPFSPE::InfoInserzione MOADE_DPFSPE::miglioreInserzione(GruppoPDZN* g, unsigned short inizioFabbrica, 
+CoppiaM<double, unsigned short> MOADE_DPFSPE::miglioreInserzione(GruppoPDZN* g, unsigned short inizioFabbrica, 
 	unsigned short lunghezzaFabbrica, unsigned short lavoroDaInserire) {
 
 	if (lunghezzaFabbrica == 0) {
@@ -703,20 +809,50 @@ MOADE_DPFSPE::InfoInserzione MOADE_DPFSPE::miglioreInserzione(GruppoPDZN* g, uns
 	return { miglioreMakespan, migliorePosizione };
 }
 
-CoppiaM<unsigned short, double> MOADE_DPFSPE::trovaFabbricaPeggiore(GruppoPDZN* g, vector<Coppia<unsigned short>>& infoFabbriche) {
+vector<Coppia<unsigned short>> MOADE_DPFSPE::calcolaPosFabbriche(GruppoPDZN* g) {
+
+	vector<Coppia<unsigned short>> posFabbriche;
+	posFabbriche.reserve(istanza.fabbriche);
+
+	unsigned short pos = 0, lunghezza;
+
+	Modulo* m = g->modulo1;
+
+	for (unsigned short i = 0; i < m->dimensione; i++) {
+
+		lunghezza = m->individuo[i] - pos + 1;
+
+		posFabbriche.push_back({ pos, lunghezza });
+
+		pos = m->individuo[i] + 1;
+	}
+
+	posFabbriche.push_back({ pos, (unsigned short)(istanza.lavori - pos) });
+
+	return posFabbriche;
+}
+
+CoppiaM<vector<MOADE_DPFSPE::InfoFabbrica>, unsigned short> MOADE_DPFSPE::calcolaInfoFabbriche(GruppoPDZN* g) {
+
+	auto posFabbriche = calcolaPosFabbriche(g);
+
+	auto info = vector<InfoFabbrica>(istanza.fabbriche);
 
 	CoppiaM<unsigned short, double> fabbricaPeggiore = { 0, 0. };
 
-	Coppia<double> tmp;
+	Coppia<double> valutazioneFabbrica;
 
-	for (unsigned short i = 0; i < infoFabbriche.size(); i++) {
-		tmp = valutaIndividuoParziale(g, infoFabbriche[i].x, infoFabbriche[i].y);
+	for (unsigned short i = 0; i < posFabbriche.size(); i++) {
+		valutazioneFabbrica = valutaIndividuoParziale(g, posFabbriche[i].x, posFabbriche[i].y);
 
-		if (tmp.x > fabbricaPeggiore.y) {
+		info[i].coordinate = posFabbriche[i];
+		info[i].valutazione = valutazioneFabbrica;
+
+		if (valutazioneFabbrica.x > fabbricaPeggiore.y) {
 			fabbricaPeggiore.x = i;
-			fabbricaPeggiore.y = tmp.x;
+			fabbricaPeggiore.y = valutazioneFabbrica.x;
 		}
 	}
 
-	return fabbricaPeggiore;
+	return {info, fabbricaPeggiore.x};
 }

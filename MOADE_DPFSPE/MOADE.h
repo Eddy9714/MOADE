@@ -18,7 +18,7 @@ template <class T> class MOADE {
 		virtual void eliminaPopolazione(vector<T>&) = 0;
 		virtual void combina(vector<T>&, unsigned short, T&) = 0;
 		virtual void aggiorna(vector<T>&, unsigned short, T&, Coppia<double>&, unsigned int&) = 0;
-		virtual void ricercaLocale(T&, unsigned int&) = 0;
+		virtual void ricercaLocale(vector<T>&, unsigned int&) = 0;
 		virtual void ottimizza(vector<T>&, unsigned int&) = 0;
 		virtual void valutaIndividuo(T&, unsigned int&, bool = true) = 0;
 		virtual void stampa(vector<T>&) = 0;
@@ -67,11 +67,8 @@ template <class T> class MOADE {
 				}
 
 				if (valutazioniEffettuate > numeroValutazioni / 1.5) {
-					for (unsigned short i = 0; i < popolazione.size(); i++) {
-						ricercaLocale(popolazione[i], valutazioniEffettuate);
-					}
+					ricercaLocale(popolazione, valutazioniEffettuate);
 				}
-				
 			}
 
 			ottimizza(popolazione, valutazioniEffettuate);
