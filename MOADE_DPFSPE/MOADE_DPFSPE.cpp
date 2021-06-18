@@ -230,9 +230,10 @@ vector<unsigned short> MOADE_DPFSPE::paretoFront(vector<Individuo>& popolazione)
 
 void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& valutazioniEffettuate, unsigned int numeroValutazioni) {
 
-	vector<unsigned short> indici = paretoFront(popolazione);
+	if (valutazioniEffettuate >= numeroValutazioni / 1.5) {
 
-	if (valutazioniEffettuate > numeroValutazioni / 1.5) {
+		vector<unsigned short> indici = paretoFront(popolazione);
+
 		unsigned short indice;
 		for (unsigned short i = 0; i < popolazione.size(); i++) {
 			indice = indici[genRand.randIntU(0, indici.size() - 1)];
@@ -587,7 +588,7 @@ void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroVa
 
 void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche) {
 
-	unsigned short pos, vel, velCorrente;
+	unsigned short pos, vel;
 	double tempoReale, tempoEstensione, tempoDelta;
 
 	GruppoPDZN* g = individuo.rappresentazione; 
@@ -621,23 +622,15 @@ void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigne
 				pos = fabbrica[i] * istanza.macchine + j - 1;
 
 				vel = g->modulo2->individuo[pos];
-				velCorrente = vel - 1;
 
 				if (vel > 0) {
 					tempoEstensione = min(o[i + 1][j - 1].x - o[i][j - 1].y, o[i][j].x - o[i][j - 1].y);
 
 					if (tempoEstensione != 0) {
-						do {
-							tempoDelta = istanza.tp[fabbrica[i]][j - 1] * (1 / istanza.velocita[velCorrente] - 1 / istanza.velocita[vel]);
-							if (tempoEstensione >= tempoDelta) {
-								g->modulo2->individuo[pos]--;
-								tempoEstensione -= tempoDelta;
-								vel = velCorrente;
-								velCorrente--;
-							}
-							else break;
-						} 						
-						while (vel > 0);
+						tempoDelta = istanza.tp[fabbrica[i]][j - 1] * (1 / istanza.velocita[vel - 1] - 1 / istanza.velocita[vel]);
+						if (tempoEstensione >= tempoDelta) {
+							g->modulo2->individuo[pos]--;
+						}
 					}
 				}
 			}
