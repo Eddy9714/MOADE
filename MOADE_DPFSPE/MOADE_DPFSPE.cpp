@@ -260,6 +260,10 @@ void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& v
 				break;
 		}
 	}
+
+	for (unsigned short i = 0; i < indici.size(); i++) {
+		ottimizzaEnergia(popolazione[indici[i]], valutazioniEffettuate);
+	}
 }
 
 void MOADE_DPFSPE::IFLSI(Individuo& individuo, CoppiaM<vector<InfoFabbrica>, unsigned short>& infoFabbriche, 
