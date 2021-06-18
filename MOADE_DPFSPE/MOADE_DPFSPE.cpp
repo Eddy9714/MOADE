@@ -99,8 +99,11 @@ void MOADE_DPFSPE::combina(vector<Individuo>& popolazione, unsigned short indice
 	genRand.dueIndiciRandom(individuo.simili.size(), i1, i2);
 
 	i1 = individuo.simili[i1];
-	i2 = individuo.simili[i2];
 
+	if (genRand.randDouble(0, 1) < 0.2) {
+		i2 = genRand.randIntU(0, popolazione.size() - 1);
+	} else i2 = individuo.simili[i2];
+	
 	*(risultato.rappresentazione) = *(popolazione[i1].rappresentazione);
 	risultato.rappresentazione->differenza(popolazione[i2].rappresentazione);
 	risultato.rappresentazione->prodotto(genRand.randDouble(0,1));
