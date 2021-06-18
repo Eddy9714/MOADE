@@ -239,7 +239,7 @@ void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& v
 
 		auto infoFabbriche = calcolaInfoFabbriche(g);
 
-		unsigned short ricerca = genRand.randIntU(0, 3);
+		unsigned short ricerca = genRand.randIntU(0, 2);
 
 		switch (ricerca) {
 			case 0:
@@ -247,17 +247,13 @@ void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& v
 				IFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
 				break;
 			case 1:
-				//Swap intra-fabbrica peggiore rispetto al makespan
-				IFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
-				break;
-			case 2:
 				//Inserzione extra-fabbrica peggiore rispetto al makespan
 				EWFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
 				break;
-			case 3:
-				//Swap extra-fabbrica peggiore rispetto al makespan
-				EWFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+			case 2:
+				ottimizzaEnergia(popolazione[indice], valutazioniEffettuate);
 				break;
+
 		}
 	}
 }

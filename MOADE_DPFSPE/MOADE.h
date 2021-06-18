@@ -66,11 +66,9 @@ template <class T> class MOADE {
 					aggiorna(popolazione, i, figlio[0], migliori, valutazioniEffettuate);
 				}
 
-				/*
-				if (valutazioniEffettuate > numeroValutazioni / 1.5) {
+				if (valutazioniEffettuate > numeroValutazioni / 2) {
 					ricercaLocale(popolazione, valutazioniEffettuate);
 				}
-				*/
 			}
 
 			ottimizza(popolazione, valutazioniEffettuate);
