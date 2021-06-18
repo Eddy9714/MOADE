@@ -45,15 +45,12 @@ void MOADE_DPFSPE::inizializzaPopolazione(vector<Individuo>& popolazione, unsign
 	popolazione[0].alpha = alphaMin;
 	popolazione[0].simili.reserve(T);
 	valutaIndividuo(popolazione[0], valutazioniEffettuate);
+	ENEH(popolazione[0], valutazioniEffettuate);
 
 	popolazione[popolazione.size() - 1].rappresentazione->modulo2->massimo();
-	popolazione[popolazione.size() - 1].rappresentazione->permutazione->random();
-	popolazione[popolazione.size() - 1].rappresentazione->modulo1->random();
-	popolazione[popolazione.size() - 1].rappresentazione->modulo1->ordina();
-
 	popolazione[popolazione.size() - 1].alpha = alphaMax;
 	popolazione[popolazione.size() - 1].simili.reserve(T);
-	valutaIndividuo(popolazione[popolazione.size() - 1], valutazioniEffettuate);
+	ENEH(popolazione[popolazione.size() - 1], valutazioniEffettuate);
 
 	for (unsigned short i = 1; i < popolazione.size() - 1; i++) {
 		popolazione[i].rappresentazione->modulo2->random();
@@ -100,10 +97,11 @@ void MOADE_DPFSPE::combina(vector<Individuo>& popolazione, unsigned short indice
 
 	i1 = individuo.simili[i1];
 
-	if (genRand.randDouble(0, 1) < 0.2) {
-		i2 = genRand.randIntU(0, popolazione.size() - 1);
-	} else i2 = individuo.simili[i2];
-	
+	if(genRand.randDouble(0,1) < 0.2){
+		i2 = genRand.randDouble(0, popolazione.size() - 1);
+	}
+	else i2 = individuo.simili[i2];
+
 	*(risultato.rappresentazione) = *(popolazione[i1].rappresentazione);
 	risultato.rappresentazione->differenza(popolazione[i2].rappresentazione);
 	risultato.rappresentazione->prodotto(genRand.randDouble(0,1));
