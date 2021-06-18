@@ -5,8 +5,8 @@ using chrono::microseconds;
 using chrono::system_clock;
 using chrono::duration_cast;
 
-//namespace fs = filesystem;
-namespace fs = experimental::filesystem;
+namespace fs = filesystem;
+//namespace fs = experimental::filesystem;
 
 int main(int argc, char* argv[])
 {
@@ -16,8 +16,8 @@ int main(int argc, char* argv[])
 	unsigned short T = 10;
 	unsigned int numeroValutazioni = 100000 - (H + 1);
 	double Fmax = 1.;
-	double alphaMin = 0;
-	double alphaMax = 1;
+	double alphaMin = 0.4;
+	double alphaMax = 0.8;
 	string percorso;
 
 	switch (argc) {

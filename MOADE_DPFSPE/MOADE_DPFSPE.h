@@ -59,6 +59,7 @@ class MOADE_DPFSPE : MOADE<Individuo>  {
 		void ottimizza(vector<Individuo>&, unsigned int&);
 		void ottimizzaEnergia(Individuo&, unsigned int&);
 		void ottimizzaEnergiaParziale(Individuo&, Coppia<unsigned short>&);
+		vector<unsigned short> paretoFront(vector<Individuo>&);
 
 		vector<Coppia<unsigned short>> calcolaPosFabbriche(GruppoPDZN*);
 		CoppiaM<vector<InfoFabbrica>, unsigned short> calcolaInfoFabbriche(GruppoPDZN*);

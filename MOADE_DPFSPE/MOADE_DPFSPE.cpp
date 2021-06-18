@@ -35,7 +35,20 @@ void MOADE_DPFSPE::creaPopolazione(vector<Individuo>& popolazione, unsigned shor
 void MOADE_DPFSPE::inizializzaPopolazione(vector<Individuo>& popolazione, unsigned int& valutazioniEffettuate, unsigned short H, unsigned short T, 
 	double alphaMin, double alphaMax, Coppia<double>& migliori) {
 
-	for (unsigned short i = 0; i < popolazione.size(); i++) {
+	GruppoPDZN* rappresentazione;
+
+	popolazione[0].rappresentazione->modulo2->identita();
+	popolazione[0].alpha = alphaMin;
+	popolazione[0].simili.reserve(T);
+	ENEH(popolazione[0], valutazioniEffettuate);
+
+	popolazione[popolazione.size() - 1].rappresentazione->modulo2->massimo();
+	popolazione[popolazione.size() - 1].alpha = alphaMax;
+	popolazione[popolazione.size() - 1].simili.reserve(T);
+	ENEH(popolazione[popolazione.size() - 1], valutazioniEffettuate);
+
+
+	for (unsigned short i = 1; i < popolazione.size() - 1; i++) {
 		popolazione[i].rappresentazione->modulo2->random();
 		popolazione[i].alpha = alphaMin + ((alphaMax - alphaMin) * (double)i / H);
 		popolazione[i].simili.reserve(T);
@@ -189,36 +202,64 @@ Coppia<double> MOADE_DPFSPE::valutaIndividuoParziale(GruppoPDZN* g, unsigned sho
 }
 
 
+vector<unsigned short> MOADE_DPFSPE::paretoFront(vector<Individuo>& popolazione) {
+
+	vector<unsigned short> indici;
+
+	sort(popolazione.begin(), popolazione.end(), [](Individuo& a, Individuo& b){
+		return a.punteggio.x < b.punteggio.x;
+	});
+
+	unsigned short i = 0, j=0;
+
+	while (i < popolazione.size()) {
+		indici.push_back(i);
+
+		j = i + 1;
+		while (j < popolazione.size()) {
+			if (popolazione[j].punteggio.y < popolazione[i].punteggio.y) break;
+			j++;
+		}
+
+		i = j;
+	}
+
+	return indici;
+}
+
 
 void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& valutazioniEffettuate) {
 
+	vector<unsigned short> indici = paretoFront(popolazione);
+
+	unsigned short indice;
 	for (unsigned short i = 0; i < popolazione.size(); i++) {
+		indice = indici[genRand.randIntU(0, indici.size() - 1)];
 		GruppoPDZN* g = popolazione[i].rappresentazione;
 
 		auto infoFabbriche = calcolaInfoFabbriche(g);
 
-		unsigned short indice = genRand.randIntU(0, 3);
+		unsigned short ricerca = genRand.randIntU(0, 3);
 
-		switch (indice) {
-		case 0:
-			//Inserzione intra-fabbrica peggiore rispetto al makespan
-			IFLSI(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
-			break;
-		case 1:
-			//Swap intra-fabbrica peggiore rispetto al makespan
-			IFLSS(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
-			break;
-		case 2:
-			//Inserzione extra-fabbrica peggiore rispetto al makespan
-			EWFLSI(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
-			break;
-		case 3:
-			//Swap extra-fabbrica peggiore rispetto al makespan
-			EWFLSS(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
-			break;
+		switch (ricerca) {
+			case 0:
+				//Inserzione intra-fabbrica peggiore rispetto al makespan
+				IFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				break;
+			case 1:
+				//Swap intra-fabbrica peggiore rispetto al makespan
+				IFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				break;
+			case 2:
+				//Inserzione extra-fabbrica peggiore rispetto al makespan
+				EWFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				break;
+			case 3:
+				//Swap extra-fabbrica peggiore rispetto al makespan
+				EWFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				break;
 		}
 	}
-
 }
 
 void MOADE_DPFSPE::IFLSI(Individuo& individuo, CoppiaM<vector<InfoFabbrica>, unsigned short>& infoFabbriche, 
@@ -519,10 +560,6 @@ void MOADE_DPFSPE::EWFLSS(Individuo& individuo, CoppiaM<vector<InfoFabbrica>, un
 				individuo.punteggio.x = makespanPeggiore;
 			}
 		}
-
-		cout << individuo.punteggio.x << ":" << individuo.punteggio.y << endl;
-		valutaIndividuo(individuo, valutazioniEffettuate, false);
-		cout << individuo.punteggio.x << ":" << individuo.punteggio.y << endl;
 	}
 
 	valutazioniEffettuate++;
