@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 
 	unsigned int seed = 0;
 	unsigned short H = 99;
-	unsigned short T = 20;
+	unsigned short T = 10;
 	unsigned int numeroValutazioni = 100000 - (H + 1);
 	double Fmax = 1.;
 	double alphaMin = 0.4;
