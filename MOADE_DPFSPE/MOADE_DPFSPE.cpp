@@ -245,26 +245,26 @@ void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& v
 			switch (ricerca) {
 			case 0:
 				//Inserzione intra-fabbrica peggiore rispetto al makespan
-				IFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				IFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate);
 				break;
 			case 1:
 				//Swap intra-fabbrica peggiore rispetto al makespan
-				IFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				IFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate);
 				break;
 			case 2:
 				//Inserzione extra-fabbrica peggiore rispetto al makespan
-				EWFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				EWFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate);
 				break;
 			case 3:
 				//Swap extra-fabbrica peggiore rispetto al makespan
-				EWFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				EWFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate);
 				break;
 			}
 		}
-	}
-	
-	for (unsigned short i = 0; i < indici.size(); i++) {
-		ottimizzaEnergia(popolazione[indici[i]], valutazioniEffettuate);
+
+		for (unsigned short i = 0; i < indici.size(); i++) {
+			ottimizzaEnergia(popolazione[indici[i]], valutazioniEffettuate);
+		}
 	}
 }
 
