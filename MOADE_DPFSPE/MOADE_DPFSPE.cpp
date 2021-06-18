@@ -261,10 +261,6 @@ void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& v
 				break;
 			}
 		}
-
-		for (unsigned short i = 0; i < indici.size(); i++) {
-			ottimizzaEnergia(popolazione[indici[i]], valutazioniEffettuate);
-		}
 	}
 }
 
@@ -591,7 +587,7 @@ void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroVa
 
 void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche) {
 
-	unsigned short pos, vel;
+	unsigned short pos, vel, velCorrente;
 	double tempoReale, tempoEstensione, tempoDelta;
 
 	GruppoPDZN* g = individuo.rappresentazione; 
@@ -625,15 +621,23 @@ void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigne
 				pos = fabbrica[i] * istanza.macchine + j - 1;
 
 				vel = g->modulo2->individuo[pos];
+				velCorrente = vel - 1;
 
 				if (vel > 0) {
 					tempoEstensione = min(o[i + 1][j - 1].x - o[i][j - 1].y, o[i][j].x - o[i][j - 1].y);
 
 					if (tempoEstensione != 0) {
-						tempoDelta = istanza.tp[fabbrica[i]][j - 1] * (1 / istanza.velocita[vel - 1] - 1 / istanza.velocita[vel]);
-						if (tempoEstensione >= tempoDelta) {
-							g->modulo2->individuo[pos]--;
-						}
+						do {
+							tempoDelta = istanza.tp[fabbrica[i]][j - 1] * (1 / istanza.velocita[velCorrente] - 1 / istanza.velocita[vel]);
+							if (tempoEstensione >= tempoDelta) {
+								g->modulo2->individuo[pos]--;
+								tempoEstensione -= tempoDelta;
+								vel = velCorrente;
+								velCorrente--;
+							}
+							else break;
+						} 						
+						while (vel > 0);
 					}
 				}
 			}
