@@ -82,6 +82,8 @@ void MOADE_DPFSPE::inizializzaPopolazione(vector<Individuo>& popolazione, unsign
 
 	migliori.x = popolazione[popolazione.size() - 1].punteggio.x;
 	migliori.y = popolazione[0].punteggio.y;
+
+	shuffle(popolazione.begin(), popolazione.end(), genRand.gen);
 }
 
 void MOADE_DPFSPE::combina(vector<Individuo>& popolazione, unsigned short indice, Individuo& risultato) {

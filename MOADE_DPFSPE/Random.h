@@ -4,10 +4,10 @@
 using namespace std;
 
 class Random {
-	private:
-		mt19937 gen;
 
 	public:
+		mt19937 gen;
+
 		Random() {
 			random_device rd;
 			gen.seed(rd());
