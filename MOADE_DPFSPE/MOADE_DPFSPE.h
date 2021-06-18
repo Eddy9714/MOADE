@@ -50,7 +50,7 @@ class MOADE_DPFSPE : MOADE<Individuo>  {
 		void ENEH(Individuo&, unsigned int&);
 		CoppiaM<double, unsigned short> miglioreInserzione(GruppoPDZN*, unsigned short, unsigned short, unsigned short);
 
-		void ricercaLocale(vector<Individuo>&, unsigned int&);
+		void ricercaLocale(vector<Individuo>&, unsigned int&, unsigned int);
 		void IFLSI(Individuo&, CoppiaM<vector<InfoFabbrica>, unsigned short>&, unsigned int&, bool = false);
 		void IFLSS(Individuo&, CoppiaM<vector<InfoFabbrica>, unsigned short>&, unsigned int&, bool = false);
 		void EWFLSI(Individuo&, CoppiaM<vector<InfoFabbrica>, unsigned short>&, unsigned int&, bool = false);
