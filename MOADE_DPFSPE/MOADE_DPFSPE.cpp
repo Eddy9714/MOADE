@@ -42,13 +42,7 @@ void MOADE_DPFSPE::inizializzaPopolazione(vector<Individuo>& popolazione, unsign
 	popolazione[0].simili.reserve(T);
 	ENEH(popolazione[0], valutazioniEffettuate);
 
-	popolazione[popolazione.size() - 1].rappresentazione->modulo2->massimo();
-	popolazione[popolazione.size() - 1].alpha = alphaMax;
-	popolazione[popolazione.size() - 1].simili.reserve(T);
-	ENEH(popolazione[popolazione.size() - 1], valutazioniEffettuate);
-
-
-	for (unsigned short i = 1; i < popolazione.size() - 1; i++) {
+	for (unsigned short i = 1; i < popolazione.size(); i++) {
 		popolazione[i].rappresentazione->modulo2->random();
 		popolazione[i].alpha = alphaMin + ((alphaMax - alphaMin) * (double)i / H);
 		popolazione[i].simili.reserve(T);

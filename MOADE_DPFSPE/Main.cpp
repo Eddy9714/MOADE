@@ -12,12 +12,12 @@ int main(int argc, char* argv[])
 {
 
 	unsigned int seed = 0;
-	unsigned short H = 49;
+	unsigned short H = 99;
 	unsigned short T = 10;
 	unsigned int numeroValutazioni = 100000 - (H + 1);
 	double Fmax = 1.;
 	double alphaMin = 0.4;
-	double alphaMax = 0.8;
+	double alphaMax = 1;
 	string percorso;
 
 	switch (argc) {
