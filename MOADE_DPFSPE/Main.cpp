@@ -24,9 +24,9 @@ int main(int argc, char* argv[])
 		case 8:
 			seed = stoi(argv[7]);
 		case 7:
-			alphaMax = stoi(argv[6]);
+			alphaMax = stod(argv[6]);
 		case 6:
-			alphaMin = stoi(argv[5]);
+			alphaMin = stod(argv[5]);
 		case 5:
 			T = stoi(argv[4]);
 		case 4:
