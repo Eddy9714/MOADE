@@ -45,6 +45,7 @@ class MOADE_DPFSPE : MOADE<Individuo>  {
 		void creaPopolazione(vector<Individuo>&, unsigned short);
 		void inizializzaPopolazione(vector<Individuo>&, unsigned int&, unsigned short, unsigned short, double, double, Coppia<double>&);
 		void combina(vector<Individuo>&, unsigned short, Individuo&);
+		void MOADE_DPFSPE::mutazione(Individuo&, double);
 		void aggiorna(vector<Individuo>&, unsigned short, Individuo&, Coppia<double>&, unsigned int&);
 
 		void ENEH(Individuo&, unsigned int&);
@@ -57,7 +58,8 @@ class MOADE_DPFSPE : MOADE<Individuo>  {
 		void EWFLSS(Individuo&, CoppiaM<vector<InfoFabbrica>, unsigned short>&, unsigned int&, bool = false);
 
 		void ottimizza(vector<Individuo>&, unsigned int&);
-		void ottimizzaEnergia(Individuo&, unsigned int&);
+		void ottimizzaEnergia(Individuo&, unsigned int&, bool = false);
+		void ottimizzaEpeggioraMParziale(Individuo&, Coppia<unsigned short>&, double);
 		void ottimizzaEnergiaParziale(Individuo&, Coppia<unsigned short>&);
 		vector<unsigned short> paretoFront(vector<Individuo>&);
 

@@ -58,6 +58,24 @@ class Random {
 			else if (i3 >= med) i3++; 
 		}
 
+		int randIntD(int a, int b, double distrib[]) {
+
+			double p = randDouble(0, 1);
+
+			unsigned int l = b - a + 1;
+
+			double tot = 0.;
+
+			for (unsigned int i = 0; i < l; i++) {
+				tot += distrib[i];
+
+				if (p <= tot)
+					return a + i;
+			}
+
+			return -1;
+		}
+
 		double cauchy(double a, double b) {
 			std::cauchy_distribution<double> distrib(a, b);
 			return distrib(gen);

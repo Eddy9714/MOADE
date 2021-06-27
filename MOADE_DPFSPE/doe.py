@@ -89,7 +89,7 @@ def main(argv):
 
       if index > 0:
 
-         folders = [directory for directory in os.listdir(instancesPath)]
+         folders = [directory for directory in os.listdir(instancesPath) if os.path.isdir(os.path.join(instancesPath, directory))]
          bucket = dict()
          score = [0., 0.]
          worstKey = None

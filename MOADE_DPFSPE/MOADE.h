@@ -52,8 +52,6 @@ template <class T> class MOADE {
 
 			inizializzaPopolazione(popolazione, valutazioniEffettuate, H, Tsize, alphaMin, alphaMax, migliori);
 
-			stampa(popolazione);
-
 			while (valutazioniEffettuate < numeroValutazioni) {
 				numeroGenerazioni++;
 
@@ -72,8 +70,6 @@ template <class T> class MOADE {
 			}
 
 			ottimizza(popolazione, valutazioniEffettuate);
-
-			stampa(popolazione);
 
 			return popolazione;
 		};

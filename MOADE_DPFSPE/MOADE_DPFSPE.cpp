@@ -3,10 +3,10 @@
 MOADE_DPFSPE::MOADE_DPFSPE(string percorso) : istanza(percorso) {
 	c = vector<double>(istanza.macchine);
 
-	o = vector<vector<Coppia<double>>>(istanza.lavori);
+	o = vector<vector<Coppia<double>>>(istanza.macchine);
 
 	for (unsigned short i = 0; i < o.size(); i++) {
-		o[i] = vector<Coppia<double>>(istanza.macchine);
+		o[i] = vector<Coppia<double>>(istanza.lavori);
 	}
 }
 
@@ -37,21 +37,36 @@ void MOADE_DPFSPE::inizializzaPopolazione(vector<Individuo>& popolazione, unsign
 
 	GruppoPDZN* rappresentazione;
 
-	popolazione[0].rappresentazione->modulo2->identita();
-	popolazione[0].alpha = alphaMin;
-	popolazione[0].simili.reserve(T);
-	ENEH(popolazione[0], valutazioniEffettuate);
+	double p[5] = {1 , 0., 0., 0., 0};
 
-	popolazione[popolazione.size() - 1].rappresentazione->modulo2->massimo();
-	popolazione[popolazione.size() - 1].alpha = alphaMax;
-	popolazione[popolazione.size() - 1].simili.reserve(T);
-	ENEH(popolazione[popolazione.size() - 1], valutazioniEffettuate);
+	double medio = 0.8 / ((H + 1) / 2);
 
-	for (unsigned short i = 1; i < popolazione.size() - 1; i++) {
-		popolazione[i].rappresentazione->modulo2->random();
+	for (unsigned short i = 0; i < popolazione.size(); i++) {
+		for (unsigned short j = 0; j < popolazione[i].rappresentazione->modulo2->dimensione; j++) {
+			popolazione[i].rappresentazione->modulo2->individuo[j] = genRand.randIntD(0, 4, p);
+		}
+
 		popolazione[i].alpha = alphaMin + ((alphaMax - alphaMin) * (double)i / H);
 		popolazione[i].simili.reserve(T);
 		ENEH(popolazione[i], valutazioniEffettuate);
+		
+		if (i + 1 <= popolazione.size() / 2) {
+			p[0] -= medio;
+			p[0] = max(0., p[0]);
+
+			for (unsigned short j = 1; j < 5; j++) {
+				p[j] += medio / 4;
+				p[j] = min(1., p[j]);
+			}
+		}
+		else {
+			p[4] += medio;
+			p[4] = min(1., p[4]);
+			for (unsigned short j = 0; j < 4; j++) {
+				p[j] -= medio / 4;
+				p[j] = max(0., p[j]);
+			}
+		}
 	}
 
 	int prima, dopo;
@@ -91,11 +106,7 @@ void MOADE_DPFSPE::combina(vector<Individuo>& popolazione, unsigned short indice
 	genRand.dueIndiciRandom(individuo.simili.size(), i1, i2);
 
 	i1 = individuo.simili[i1];
-
-	if(genRand.randDouble(0,1) < 0.2){
-		i2 = genRand.randDouble(0, popolazione.size() - 1);
-	}
-	else i2 = individuo.simili[i2];
+	i2 = individuo.simili[i2];
 
 	*(risultato.rappresentazione) = *(popolazione[i1].rappresentazione);
 	risultato.rappresentazione->differenza(popolazione[i2].rappresentazione);
@@ -103,13 +114,45 @@ void MOADE_DPFSPE::combina(vector<Individuo>& popolazione, unsigned short indice
 	risultato.rappresentazione->somma(individuo.rappresentazione);
 	risultato.rappresentazione->modulo1->ordina();
 
+	mutazione(risultato, 0.2);
+
 	risultato.alpha = individuo.alpha;
 }
+
+void MOADE_DPFSPE::mutazione(Individuo& individuo, double pM) {
+	
+	GruppoPDZN* g = individuo.rappresentazione;
+	int r1, r2;
+	unsigned short tmp;
+
+	//Muta permutazione swap
+	if (genRand.randDouble(0, 1 < pM)) {
+		genRand.dueIndiciRandom(g->permutazione->dimensione - 1, r1, r2);
+
+		tmp = g->permutazione->individuo[r1];
+		g->permutazione->individuo[r1] = g->permutazione->individuo[r2];
+		g->permutazione->individuo[r2] = tmp;
+	}
+	
+	//Muta velocità
+	if (genRand.randDouble(0, 1) < pM) {
+		r1 = genRand.randIntU(0, g->modulo2->dimensione - 1);
+		tmp = g->modulo2->individuo[r1];
+			
+		r2 = genRand.randIntU(0, istanza.nVelocita - 2);
+
+		if (r2 <= tmp)
+			r2++;
+
+		g->modulo2->individuo[r1] = r2;
+	}
+}
+
 
 void MOADE_DPFSPE::aggiorna(vector<Individuo>& popolazione, unsigned short indice, Individuo& risultato, 
 	Coppia<double>& migliori, unsigned int& valutazioniEffettuate) {
 
-	valutaIndividuo(risultato, valutazioniEffettuate);
+	ottimizzaEnergia(risultato, valutazioniEffettuate);
 
 	if (risultato.punteggio.x < migliori.x)
 		migliori.x = risultato.punteggio.x;
@@ -157,8 +200,7 @@ void MOADE_DPFSPE::valutaIndividuo(Individuo& individuo, unsigned int& valutazio
 		risultato.y += coppia.y;
 	}
 
-	individuo.punteggio = risultato;
-}
+	individuo.punteggio = risultato;}
 
 Coppia<double> MOADE_DPFSPE::valutaIndividuoParziale(GruppoPDZN* g, unsigned short inizioFabbrica, unsigned short lunghezza, int posDaEscludere) {
 
@@ -572,36 +614,50 @@ void MOADE_DPFSPE::EWFLSS(Individuo& individuo, CoppiaM<vector<InfoFabbrica>, un
 }
 
 
-void MOADE_DPFSPE::ottimizza(vector<Individuo>& popolazione, unsigned int& numerValutazioni) {
+void MOADE_DPFSPE::ottimizza(vector<Individuo>& popolazione, unsigned int& numeroValutazioni) {
 	for (unsigned short i = 0; i < popolazione.size(); i++) {
-		ottimizzaEnergia(popolazione[i], numerValutazioni);
+		ottimizzaEnergia(popolazione[i], numeroValutazioni, true);
 	}
 }
 
-void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroValutazioni) {
+void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroValutazioni, bool peggioraMakespanFabbriche) {
 
-	vector<Coppia<unsigned short>> posFabbriche = calcolaPosFabbriche(individuo.rappresentazione);
+	if (peggioraMakespanFabbriche) {
+		CoppiaM<vector<InfoFabbrica>, unsigned short> infoFabbriche = calcolaInfoFabbriche(individuo.rappresentazione);
 
-	for (unsigned short i = 0; i < posFabbriche.size(); i++) {
-		ottimizzaEnergiaParziale(individuo, posFabbriche[i]);
+		for (unsigned short i = 0; i < infoFabbriche.x.size(); i++) {
+
+			if (i != infoFabbriche.y) {
+				ottimizzaEpeggioraMParziale(individuo, infoFabbriche.x[i].coordinate,
+					infoFabbriche.x[infoFabbriche.y].valutazione.x - infoFabbriche.x[i].valutazione.x);
+			}
+				
+			ottimizzaEnergiaParziale(individuo, infoFabbriche.x[i].coordinate);
+		}
+	}
+	else {
+		vector<Coppia<unsigned short>> posFabbriche = calcolaPosFabbriche(individuo.rappresentazione);
+
+		for (unsigned short i = 0; i < posFabbriche.size(); i++) {
+			ottimizzaEnergiaParziale(individuo, posFabbriche[i]);
+		}
 	}
 
 	valutaIndividuo(individuo, numeroValutazioni);
 }
 
-void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche) {
-
+void MOADE_DPFSPE::ottimizzaEpeggioraMParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche, double differenzaMakespan)
+{
 	unsigned short pos, vel;
-	double tempoReale, tempoEstensione, tempoDelta;
+	double tempoReale;
 
-	GruppoPDZN* g = individuo.rappresentazione; 
+	GruppoPDZN* g = individuo.rappresentazione;
 	unsigned short* fabbrica = g->permutazione->individuo + posFabbriche.x;
 
-	for (unsigned short j = 0; j < istanza.macchine; j++) {
-		for (unsigned short i = 0; i < posFabbriche.y; i++) {
-			
-			pos = fabbrica[i] * istanza.macchine + j;
-			tempoReale = istanza.tp[fabbrica[i]][j] / istanza.velocita[g->modulo2->individuo[pos]] + istanza.s[fabbrica[i]][j];
+	for (unsigned short i = 0; i < istanza.macchine; i++) {
+		for (unsigned short j = 0; j < posFabbriche.y; j++) {
+			pos = fabbrica[j] * istanza.macchine + i;
+			tempoReale = istanza.tp[fabbrica[j]][i] / istanza.velocita[g->modulo2->individuo[pos]] + istanza.s[fabbrica[j]][i];
 
 			if (i == 0 && j == 0) {
 				o[0][0].x = 0;
@@ -619,25 +675,142 @@ void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigne
 				o[i][j].x = max(o[i][j - 1].y, o[i - 1][j].y);
 				o[i][j].y = o[i][j].x + tempoReale;
 			}
+		}
+	}
 
-			if (i != posFabbriche.y - 1 && j != 0) {
+	vector<Tripla<unsigned short>> esecuzioni;
 
-				pos = fabbrica[i] * istanza.macchine + j - 1;
+	for (unsigned short i = 0; i < istanza.macchine; i++) {
+		for (unsigned short j = 0; j < posFabbriche.y; j++) {
+			pos = fabbrica[j] * istanza.macchine + i;
 
-				vel = g->modulo2->individuo[pos];
+			if (g->modulo2->individuo[pos] != 0)
+				esecuzioni.push_back({ (unsigned short)i, (unsigned short)j, g->modulo2->individuo[pos] });
+		}
+	}
+	
+	sort(esecuzioni.begin(), esecuzioni.end(), [](auto v1, auto v2) {
+		return v1.z > v2.z;
+	});
 
-				if (vel > 0) {
-					tempoEstensione = min(o[i + 1][j - 1].x - o[i][j - 1].y, o[i][j].x - o[i][j - 1].y);
+	unsigned short i = 0, job;
+	double diff;
 
-					if (tempoEstensione != 0) {
-						tempoDelta = istanza.tp[fabbrica[i]][j - 1] * (1 / istanza.velocita[vel - 1] - 1 / istanza.velocita[vel]);
-						if (tempoEstensione >= tempoDelta) {
-							g->modulo2->individuo[pos]--;
-						}
+	while (i < esecuzioni.size()) {
+
+		job = fabbrica[esecuzioni[i].y];
+
+		diff = istanza.tp[job][esecuzioni[i].x] * (1 / istanza.velocita[esecuzioni[i].z - 1] -
+			1 / istanza.velocita[esecuzioni[i].z]);
+
+		if (diff <= differenzaMakespan) {
+			differenzaMakespan -= diff;
+			pos = job * istanza.macchine + esecuzioni[i].x;
+			g->modulo2->individuo[pos]--;
+			esecuzioni[i].z--;
+
+			if (g->modulo2->individuo[pos] == 0) {
+				esecuzioni.erase(esecuzioni.begin() + i);
+			}
+			else {
+				unsigned short k = i;
+
+				for (unsigned short j = k + 1; j < esecuzioni.size(); j++) {
+					if (esecuzioni[j].z > esecuzioni[k].z) {
+						swap(esecuzioni[k], esecuzioni[j]);
+						k = j;
 					}
+					else break;
 				}
 			}
+			i = 0;
 		}
+		else i++;		
+	}
+}
+
+void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche) {
+
+	unsigned short pos, vel;
+	double tempoReale;
+
+	GruppoPDZN* g = individuo.rappresentazione; 
+	unsigned short* fabbrica = g->permutazione->individuo + posFabbriche.x;
+
+	for (unsigned short i = 0; i < istanza.macchine; i++) {
+		for (unsigned short j = 0; j < posFabbriche.y; j++) {
+			pos = fabbrica[j] * istanza.macchine + i;
+			tempoReale = istanza.tp[fabbrica[j]][i] / istanza.velocita[g->modulo2->individuo[pos]] + istanza.s[fabbrica[j]][i];
+
+			if (i == 0 && j == 0) {
+				o[0][0].x = 0;
+				o[0][0].y = tempoReale;
+			}
+			else if (i == 0 && j != 0) {
+				o[0][j].x = o[0][j - 1].y;
+				o[0][j].y = o[0][j].x + tempoReale;
+			}
+			else if (j == 0) {
+				o[i][0].x = o[i - 1][0].y;
+				o[i][0].y = o[i][0].x + tempoReale;
+			}
+			else {
+				o[i][j].x = max(o[i][j - 1].y, o[i - 1][j].y);
+				o[i][j].y = o[i][j].x + tempoReale;
+			}
+		}
+	}
+	
+	double attesaProssimoJob, scostamentoProssimaMacchina, estensionePrec = 0, estensione = 0, diffTp, guadagnoEnergia;
+	unsigned short job;
+	for (int i = posFabbriche.y - 1; i >= 0; i--) {
+		for (int j = istanza.macchine - 1; j >= 0; j--) {
+
+			if (i == posFabbriche.y - 1 && j == istanza.macchine - 1) {
+				attesaProssimoJob = 0;
+				scostamentoProssimaMacchina = 0;
+			}
+			else {
+
+				if (i == posFabbriche.y - 1) attesaProssimoJob = DBL_MAX / 2;
+				else attesaProssimoJob = o[j][i + 1].x - o[j][i].y;
+
+				if (j == istanza.macchine - 1) scostamentoProssimaMacchina = DBL_MAX / 2;
+				else scostamentoProssimaMacchina = o[j + 1][i].x - o[j][i].y;
+
+				estensione = min(attesaProssimoJob, estensionePrec + scostamentoProssimaMacchina);
+
+				estensionePrec = estensione;
+				
+				job = fabbrica[i];
+				pos = job * istanza.macchine + j;
+				vel = g->modulo2->individuo[pos];
+
+				while (vel > 0) {
+					diffTp = istanza.tp[job][j] * (1 / istanza.velocita[vel - 1] - 1 / istanza.velocita[vel]);
+					if (estensione - diffTp > 0) {
+						vel = --g->modulo2->individuo[pos];
+						estensione -= diffTp;
+					}
+					else break;
+				}
+
+				if (j != istanza.macchine - 1) {
+					double differenza = o[j][i].y + estensionePrec - estensione - o[j + 1][i].x;
+
+					if (differenza > 0) {
+						o[j + 1][i].x += differenza;
+						o[j + 1][i].y += differenza;
+					}
+				}
+					
+				o[j][i].y += estensionePrec - estensione;
+
+				estensionePrec = estensione;
+			}
+			//cout << estensione << "\t";
+		}
+		//cout << endl;
 	}
 }
 

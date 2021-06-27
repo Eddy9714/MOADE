@@ -5,20 +5,20 @@ using chrono::microseconds;
 using chrono::system_clock;
 using chrono::duration_cast;
 
-//namespace fs = filesystem;
-namespace fs = experimental::filesystem;
+namespace fs = filesystem;
+//namespace fs = experimental::filesystem;
 
 int main(int argc, char* argv[])
 {
 
 	unsigned int seed = 0;
-	unsigned short H = 99;
+	unsigned short H = 100;
 	unsigned short T = 10;
 	unsigned int numeroValutazioni = 100000 - (H + 1);
 	double Fmax = 1.;
-	double alphaMin = 0.4;
-	double alphaMax = 0.8;
-	string percorso;
+	double alphaMin = 0.35;
+	double alphaMax = 0.65;
+	string percorso = "C:/Users/edu4r/Desktop/instances/20_2_10.txt";
 
 	switch (argc) {
 		case 8:
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 			break;
 		case 1:
 			cerr << "run with params [instance_path] [evaluations*] [H*] [T*] [AlphaMin*] [AlphaMax*] [seed*]" << endl;
-			exit(-1);
+			//exit(-1);
 			break;
 	}
 

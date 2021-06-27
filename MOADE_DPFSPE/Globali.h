@@ -21,3 +21,10 @@ struct Tripla {
 	T y;
 	T z;
 };
+
+template <typename T1, typename	T2, typename T3>
+struct TriplaM {
+	T1 x;
+	T2 y;
+	T3 z;
+};
