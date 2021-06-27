@@ -45,7 +45,7 @@ class MOADE_DPFSPE : MOADE<Individuo>  {
 		void creaPopolazione(vector<Individuo>&, unsigned short);
 		void inizializzaPopolazione(vector<Individuo>&, unsigned int&, unsigned short, unsigned short, double, double, Coppia<double>&);
 		void combina(vector<Individuo>&, unsigned short, Individuo&);
-		void MOADE_DPFSPE::mutazione(Individuo&, double);
+		void mutazione(Individuo&, double);
 		void aggiorna(vector<Individuo>&, unsigned short, Individuo&, Coppia<double>&, unsigned int&);
 
 		void ENEH(Individuo&, unsigned int&);
