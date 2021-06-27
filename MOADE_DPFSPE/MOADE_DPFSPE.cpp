@@ -277,12 +277,9 @@ void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& v
 
 	if (valutazioniEffettuate >= numeroValutazioni / 1.5) {
 
-		vector<unsigned short> indici = paretoFront(popolazione);
-
 		unsigned short indice;
 		for (unsigned short i = 0; i < popolazione.size(); i++) {
-			indice = indici[genRand.randIntU(0, indici.size() - 1)];
-			GruppoPDZN* g = popolazione[indice].rappresentazione;
+			GruppoPDZN* g = popolazione[i].rappresentazione;
 
 			auto infoFabbriche = calcolaInfoFabbriche(g);
 
@@ -291,19 +288,19 @@ void MOADE_DPFSPE::ricercaLocale(vector<Individuo>& popolazione, unsigned int& v
 			switch (ricerca) {
 			case 0:
 				//Inserzione intra-fabbrica peggiore rispetto al makespan
-				IFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				IFLSI(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
 				break;
 			case 1:
 				//Swap intra-fabbrica peggiore rispetto al makespan
-				IFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				IFLSS(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
 				break;
 			case 2:
 				//Inserzione extra-fabbrica peggiore rispetto al makespan
-				EWFLSI(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				EWFLSI(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
 				break;
 			case 3:
 				//Swap extra-fabbrica peggiore rispetto al makespan
-				EWFLSS(popolazione[indice], infoFabbriche, valutazioniEffettuate, true);
+				EWFLSS(popolazione[i], infoFabbriche, valutazioniEffettuate, true);
 				break;
 			}
 		}
