@@ -120,7 +120,6 @@ void MOADE_DPFSPE::combina(vector<Individuo>& popolazione, unsigned short indice
 	risultato.rappresentazione->prodotto(F);
 	risultato.rappresentazione->somma(individuo.rappresentazione);
 	risultato.rappresentazione->modulo1->ordina();
-
 	mutazione(risultato, 0.2);
 
 	risultato.alpha = individuo.alpha;
@@ -135,24 +134,60 @@ void MOADE_DPFSPE::mutazione(Individuo& individuo, double pM) {
 
 	//Muta permutazione swap
 	if (genRand.randDouble(0, 1 < pM)) {
-		genRand.dueIndiciRandom(g->permutazione->dimensione - 1, r1, r2);
 
-		tmp = g->permutazione->individuo[r1];
-		g->permutazione->individuo[r1] = g->permutazione->individuo[r2];
-		g->permutazione->individuo[r2] = tmp;
+		vector<Coppia<unsigned short>> posFabbriche = calcolaPosFabbriche(g);
+
+		unsigned short indiceFabbricaRandom = genRand.randIntU(0, posFabbriche.size() - 1);
+
+		auto fabbrica = posFabbriche[indiceFabbricaRandom];
+
+		int i1, i2;
+		genRand.dueIndiciRandom(fabbrica.y, i1, i2);
+
+		unsigned short posLavoro = fabbrica.x + i1;
+		unsigned short nuovoPosLavoro = fabbrica.x + i2;
+		unsigned short lavoro = g->permutazione->individuo[posLavoro];
+		//rimuovi elemento in posizione i e trova la migliore posizione possibile
+
+		if (i1 >= fabbrica.y / 2) {
+			unsigned short posizioniDaCopiare = fabbrica.y - i1 - 1;
+
+			if (posizioniDaCopiare > 0)
+				memcpy(g->permutazione->individuo + posLavoro, g->permutazione->individuo + posLavoro + 1,
+					sizeof(unsigned short) * posizioniDaCopiare);
+
+			memcpy(g->permutazione->individuo + nuovoPosLavoro + 1, g->permutazione->individuo + nuovoPosLavoro, sizeof(unsigned short) *
+				(fabbrica.y - 1 - i2));
+		}
+		else {
+			if (i1 > 0)
+				memcpy(g->permutazione->individuo + fabbrica.x + 1, g->permutazione->individuo + fabbrica.x,
+					sizeof(unsigned short) * i1);
+			memcpy(g->permutazione->individuo + fabbrica.x, g->permutazione->individuo + fabbrica.x + 1, sizeof(unsigned short) *
+				i2);
+		}
+
+		g->permutazione->individuo[nuovoPosLavoro] = lavoro;
 	}
+
+	unsigned short i, j;
 	
 	//Muta velocità
 	if (genRand.randDouble(0, 1) < pM) {
-		r1 = genRand.randIntU(0, g->modulo2->dimensione - 1);
-		tmp = g->modulo2->individuo[r1];
-			
-		r2 = genRand.randIntU(0, istanza.nVelocita - 2);
-
-		if (r2 <= tmp)
-			r2++;
-
-		g->modulo2->individuo[r1] = r2;
+		for (i = 0; i < istanza.lavori; i++) {
+			for (j = 0; j < istanza.macchine; j++) {
+				if (genRand.randDouble(0, 1) < 0.1) {
+					tmp = g->modulo2->individuo[i * istanza.lavori + j];
+					if (tmp == 0)
+						tmp = 1;
+					else if (tmp == 4)
+						tmp = 3;
+					else {
+						tmp = genRand.randDouble(0, 1) < 0.5 ? tmp++ : tmp--;
+					}
+				}
+			}
+		}
 	}
 }
 

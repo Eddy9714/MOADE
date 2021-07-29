@@ -51,6 +51,8 @@ int main(int argc, char* argv[])
 	auto fine = chrono::high_resolution_clock::now();
 	chrono::duration<double> durata = fine - inizio;
 
+	numeroValutazioni += 2 * (H + 1);
+
 	int posizione = percorso.find_last_of(".");
 	string percorsoNoExt = percorso.substr(0, posizione);
 
@@ -58,7 +60,7 @@ int main(int argc, char* argv[])
 	posizione = percorsoNoExt.find_last_of("/");
 	string nomeFile = percorsoNoExt.substr(posizione + 1);
 
-	percorsoNoExt = percorsoNoExt + "-" + to_string((numeroValutazioni + H + 1)) + "_" + to_string(H) + "_" + to_string(T) 
+	percorsoNoExt = percorsoNoExt + "-" + to_string(numeroValutazioni) + "_" + to_string(H) + "_" + to_string(T) 
 		+ "_" + to_string(alphaMin) + "_" + to_string(alphaMax) + "_" + to_string(seed);
 
 	string nomeReport = percorsoNoExt + "/" + to_string(tempo) + "-report.csv";
