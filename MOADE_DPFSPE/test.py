@@ -10,7 +10,7 @@ import sys
 import getopt
 
 def worker(command):
-    p = Popen(command, stderr=DEVNULL, shell=True)
+    p = Popen(command, stdout=DEVNULL, stderr=DEVNULL, shell=True)
     p.wait()
 
 def main(argv):

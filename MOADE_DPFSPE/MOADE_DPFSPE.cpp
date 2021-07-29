@@ -639,8 +639,6 @@ void MOADE_DPFSPE::ottimizza(vector<Individuo>& popolazione, unsigned int& numer
 void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroValutazioni, bool peggioraMakespanFabbriche) {
 
 	if (peggioraMakespanFabbriche) {
-		cout << individuo.punteggio.x << ":" << individuo.punteggio.y << endl;
-
 		CoppiaM<vector<InfoFabbrica>, unsigned short> infoFabbriche = calcolaInfoFabbriche(individuo.rappresentazione);
 
 		for (unsigned short i = 0; i < infoFabbriche.x.size(); i++) {
@@ -653,8 +651,6 @@ void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroVa
 		}
 
 		valutaIndividuo(individuo, numeroValutazioni);
-
-		cout << individuo.punteggio.x << ":" << individuo.punteggio.y << endl << endl;
 	}
 	else {
 		vector<Coppia<unsigned short>> posFabbriche = calcolaPosFabbriche(individuo.rappresentazione);
