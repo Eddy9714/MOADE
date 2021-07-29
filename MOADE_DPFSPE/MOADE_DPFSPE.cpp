@@ -220,7 +220,8 @@ void MOADE_DPFSPE::valutaIndividuo(Individuo& individuo, unsigned int& valutazio
 		risultato.y += coppia.y;
 	}
 
-	individuo.punteggio = risultato;}
+	individuo.punteggio = risultato;
+}
 
 Coppia<double> MOADE_DPFSPE::valutaIndividuoParziale(GruppoPDZN* g, unsigned short inizioFabbrica, unsigned short lunghezza, int posDaEscludere) {
 
