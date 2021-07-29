@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 	double Fmax = 1.;
 	double alphaMin = 0.35;
 	double alphaMax = 0.65;
-	string percorso = "C:/users/edu4r/desktop/instances/20_2_5.txt";
+	string percorso = "C:/users/edu4r/desktop/test2/20_2_5.txt";
 
 	switch (argc) {
 		case 8:
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 		case 4:
 			H = stoi(argv[3]);
 		case 3:
-			numeroValutazioni = stoi(argv[2]) - (H + 1);
+			numeroValutazioni = stoi(argv[2]) - 2*(H + 1);
 		case 2:
 			percorso = argv[1];
 			break;
@@ -43,6 +43,8 @@ int main(int argc, char* argv[])
 	}
 
 	MOADE_DPFSPE esecutore(percorso);
+
+	numeroValutazioni = 100 * esecutore.istanza.lavori * esecutore.istanza.macchine * esecutore.istanza.fabbriche - 2*(H+1);
 
 	auto inizio = chrono::high_resolution_clock::now();
 	vector<Individuo> risultato = esecutore.esegui(H, T, numeroValutazioni, Fmax, alphaMin, alphaMax, seed);
