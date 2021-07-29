@@ -14,6 +14,7 @@ struct Individuo {
 	GruppoPDZN* rappresentazione;
 	Coppia<double> punteggio;
 	double alpha;
+	double F;
 	vector<unsigned short> simili;
 };
 
@@ -37,16 +38,16 @@ class MOADE_DPFSPE : MOADE<Individuo>  {
 		};
 
 		vector<double> c;
-		vector<vector<Coppia<double>>> o;
+		vector<vector<TriplaM<double, double, bool>>> o;
 		
 		Coppia<double> valutaIndividuoParziale(GruppoPDZN*, unsigned short, unsigned short, int = -1);
 		void valutaIndividuo(Individuo&, unsigned int&, bool = true);
 
 		void creaPopolazione(vector<Individuo>&, unsigned short);
-		void inizializzaPopolazione(vector<Individuo>&, unsigned int&, unsigned short, unsigned short, double, double, Coppia<double>&);
+		void inizializzaPopolazione(vector<Individuo>&, unsigned int&, unsigned short, unsigned short, double, double, Coppia<double>&, Coppia<double>&);
 		void combina(vector<Individuo>&, unsigned short, Individuo&);
 		void mutazione(Individuo&, double);
-		void aggiorna(vector<Individuo>&, unsigned short, Individuo&, Coppia<double>&, unsigned int&);
+		void aggiorna(vector<Individuo>&, unsigned short, Individuo&, Coppia<double>&, Coppia<double>&, unsigned int&);
 
 		void ENEH(Individuo&, unsigned int&);
 		CoppiaM<double, unsigned short> miglioreInserzione(GruppoPDZN*, unsigned short, unsigned short, unsigned short);

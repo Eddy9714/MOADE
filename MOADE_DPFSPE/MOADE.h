@@ -14,10 +14,10 @@ template <class T> class MOADE {
 		unsigned int seed;
 
 		virtual void creaPopolazione(vector<T>&, unsigned short) = 0;
-		virtual void inizializzaPopolazione(vector<T>&, unsigned int&, unsigned short, unsigned short, double, double, Coppia<double>&) = 0;
+		virtual void inizializzaPopolazione(vector<T>&, unsigned int&, unsigned short, unsigned short, double, double, Coppia<double>&, Coppia<double>&) = 0;
 		virtual void eliminaPopolazione(vector<T>&) = 0;
 		virtual void combina(vector<T>&, unsigned short, T&) = 0;
-		virtual void aggiorna(vector<T>&, unsigned short, T&, Coppia<double>&, unsigned int&) = 0;
+		virtual void aggiorna(vector<T>&, unsigned short, T&, Coppia<double>&, Coppia<double>&, unsigned int&) = 0;
 		virtual void ricercaLocale(vector<T>&, unsigned int&, unsigned int) = 0;
 		virtual void ottimizza(vector<T>&, unsigned int&) = 0;
 		virtual void valutaIndividuo(T&, unsigned int&, bool = true) = 0;
@@ -46,13 +46,15 @@ template <class T> class MOADE {
 			popolazione.reserve(1);
 
 			Coppia<double> migliori = { DBL_MAX, DBL_MAX };
+			Coppia<double> peggiori = { 0, 0 };
 
 			creaPopolazione(popolazione, nIndividui);
 			creaPopolazione(figlio, 1);
 
-			inizializzaPopolazione(popolazione, valutazioniEffettuate, H, Tsize, alphaMin, alphaMax, migliori);
+			inizializzaPopolazione(popolazione, valutazioniEffettuate, H, Tsize, alphaMin, alphaMax, migliori, peggiori);
 
 			while (valutazioniEffettuate < numeroValutazioni) {
+
 				numeroGenerazioni++;
 
 				sec intervallo = orologio::now() - tempoAttuale;
@@ -62,8 +64,8 @@ template <class T> class MOADE {
 				}
 
 				for (unsigned short i = 0; i < nIndividui; i++) {
-					combina(popolazione, i, figlio[0]);	
-					aggiorna(popolazione, i, figlio[0], migliori, valutazioniEffettuate);
+					combina(popolazione, i, figlio[0]);
+					aggiorna(popolazione, i, figlio[0], migliori, peggiori, valutazioniEffettuate);
 				}
 
 				ricercaLocale(popolazione, valutazioniEffettuate, numeroValutazioni);
