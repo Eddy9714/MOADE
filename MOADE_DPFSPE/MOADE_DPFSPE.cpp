@@ -650,7 +650,6 @@ void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroVa
 			ottimizzaEnergiaParziale(individuo, infoFabbriche.x[i].coordinate);
 		}
 
-		valutaIndividuo(individuo, numeroValutazioni);
 	}
 	else {
 		vector<Coppia<unsigned short>> posFabbriche = calcolaPosFabbriche(individuo.rappresentazione);
@@ -710,52 +709,74 @@ void MOADE_DPFSPE::ottimizzaEpeggioraMParziale(Individuo& individuo, Coppia<unsi
 		else o[--y][x].z = true;
 	}
 
-	vector<CoppiaM<TriplaM<unsigned short, unsigned short , bool>, unsigned short>> esecuzioni;
+	vector<list<Coppia<unsigned short>>> esecuzioniPrioritarie(4);
+	vector<list<Coppia<unsigned short>>> esecuzioni(4);
 
 	for (unsigned short j = 0; j < istanza.macchine; j++) {
 		for (unsigned short i = 0; i < posFabbriche.y; i++) {
 			pos = fabbrica[i] * istanza.macchine + j;
 
-			if (g->modulo2->individuo[pos] != 0)
-				esecuzioni.push_back({{(unsigned short)i, (unsigned short)j, o[j][i].z}, g->modulo2->individuo[pos] });
-		}
-	}
-	
-	sort(esecuzioni.begin(), esecuzioni.end(), [](auto v1, auto v2) {
-		return (v1.x.z == true && v1.y > v2.y) || (v1.x.z == true && v2.x.z == false) || (v2.x.z == false && v1.y > v2.y);
-	});
-
-	unsigned short i = 0, job;
-	double diff;
-
-	while (i < esecuzioni.size()) {
-		job = fabbrica[esecuzioni[i].x.x];
-
-		diff = istanza.tp[job][esecuzioni[i].x.y] * (1 / istanza.velocita[esecuzioni[i].y - 1] -
-			1 / istanza.velocita[esecuzioni[i].y]);
-
-		if (diff <= differenzaMakespan) {
-			differenzaMakespan -= diff;
-			pos = job * istanza.macchine + esecuzioni[i].x.y;
-			g->modulo2->individuo[pos]--;
-			esecuzioni[i].y--;
-
-			if (g->modulo2->individuo[pos] == 0) {
-				esecuzioni.erase(esecuzioni.begin() + i);
-			}
-			else {
-				unsigned short k = i;
-
-				for (unsigned short j = k + 1; j < esecuzioni.size(); j++) {
-					if (esecuzioni[k].x.z == esecuzioni[j].x.z && esecuzioni[j].y > esecuzioni[k].y) {
-						swap(esecuzioni[k], esecuzioni[j]);
-						k = j;
-					}
-					else break;
+			if (g->modulo2->individuo[pos] != 0) {
+				if (o[j][i].z) {
+					esecuzioniPrioritarie[g->modulo2->individuo[pos] - 1].push_back({ (unsigned short)i, (unsigned short)j });
+				}
+				else {
+					esecuzioni[g->modulo2->individuo[pos] - 1].push_back({ (unsigned short)i, (unsigned short)j });
 				}
 			}
 		}
-		else i++;		
+	}
+
+	int i;
+	unsigned short job;
+	double diff;
+
+	Coppia<unsigned short> el;
+
+	for (i = 3; i >= 0; i--) {
+		auto o = esecuzioniPrioritarie[i].begin();
+
+		while (o != esecuzioniPrioritarie[i].end()) {
+			el = (*o);
+			job = fabbrica[el.x];
+			diff = istanza.tp[job][el.y] * (1 / istanza.velocita[i] - 1 / istanza.velocita[i+1]);
+
+			if (diff <= differenzaMakespan) {
+				differenzaMakespan -= diff;
+				pos = job * istanza.macchine + el.y;
+				g->modulo2->individuo[pos]--;
+
+				o = esecuzioniPrioritarie[i].erase(o);
+
+				if (i != 0) {
+					esecuzioniPrioritarie[i - 1].push_back(el);
+				}
+			}
+			else o++;
+		}
+	}
+
+	for (i = 3; i >= 0; i--) {
+		auto o = esecuzioni[i].begin();
+
+		while (o != esecuzioni[i].end()) {
+			el = (*o);
+			job = fabbrica[el.x];
+			diff = istanza.tp[job][el.y] * (1 / istanza.velocita[i] - 1 / istanza.velocita[i + 1]);
+
+			if (diff <= differenzaMakespan) {
+				differenzaMakespan -= diff;
+				pos = job * istanza.macchine + el.y;
+				g->modulo2->individuo[pos]--;
+
+				o = esecuzioni[i].erase(o);
+
+				if (i != 0) {
+					esecuzioni[i - 1].push_front(el);
+				}
+			}
+			else o++;
+		}
 	}
 }
 
