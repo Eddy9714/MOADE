@@ -128,7 +128,7 @@ void MOADE_DPFSPE::combina(vector<Individuo>& popolazione, unsigned short indice
 }
 
 void MOADE_DPFSPE::mutazione(Individuo& individuo, double pM) {
-	
+
 	GruppoPDZN* g = individuo.rappresentazione;
 	int r1, r2;
 	unsigned short tmp;
@@ -141,7 +141,7 @@ void MOADE_DPFSPE::mutazione(Individuo& individuo, double pM) {
 		g->permutazione->individuo[r1] = g->permutazione->individuo[r2];
 		g->permutazione->individuo[r2] = tmp;
 	}
-	
+
 	//Muta velocità
 	if (genRand.randDouble(0, 1) < pM) {
 
@@ -156,14 +156,14 @@ void MOADE_DPFSPE::mutazione(Individuo& individuo, double pM) {
 					tmp = g->modulo2->individuo[pos];
 
 					switch (tmp) {
-						case 0:
-							tmp++;
-							break;
-						case 4:
-							tmp--;
-							break;
-						default:
-							genRand.randDouble(0, 1) < 0.5 ? tmp++ : tmp--;
+					case 0:
+						tmp++;
+						break;
+					case 4:
+						tmp--;
+						break;
+					default:
+						genRand.randDouble(0, 1) < 0.5 ? tmp++ : tmp--;
 					}
 
 					g->modulo2->individuo[pos] = tmp;
@@ -681,8 +681,7 @@ void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroVa
 
 void MOADE_DPFSPE::ottimizzaEpeggioraMParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche, double differenzaMakespan)
 {
-	unsigned vel;
-	unsigned short pos;
+	unsigned short pos, vel;
 	double tempoReale;
 
 	GruppoPDZN* g = individuo.rappresentazione;
@@ -800,8 +799,7 @@ void MOADE_DPFSPE::ottimizzaEpeggioraMParziale(Individuo& individuo, Coppia<unsi
 
 void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche) {
 
-	unsigned short vel;
-	unsigned short pos;
+	unsigned short pos, vel;
 	double tempoReale;
 
 	GruppoPDZN* g = individuo.rappresentazione; 
@@ -1098,8 +1096,7 @@ vector<Coppia<unsigned short>> MOADE_DPFSPE::calcolaPosFabbriche(GruppoPDZN* g) 
 	vector<Coppia<unsigned short>> posFabbriche;
 	posFabbriche.reserve(istanza.fabbriche);
 
-	unsigned short lunghezza;
-	unsigned short pos;
+	unsigned short pos = 0, lunghezza;
 
 	Modulo* m = g->modulo1;
 
