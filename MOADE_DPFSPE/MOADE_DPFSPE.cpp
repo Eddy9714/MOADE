@@ -173,7 +173,6 @@ void MOADE_DPFSPE::mutazione(Individuo& individuo, double pM) {
 	}
 }
 
-
 void MOADE_DPFSPE::aggiorna(vector<Individuo>& popolazione, unsigned short indice, Individuo& risultato, 
 	Coppia<double>& migliori, Coppia<double>& peggiori, unsigned int& valutazioniEffettuate) {
 
@@ -214,7 +213,6 @@ void MOADE_DPFSPE::aggiorna(vector<Individuo>& popolazione, unsigned short indic
 		}
 	}
 }
-
 
 void MOADE_DPFSPE::eliminaPopolazione(vector<Individuo>& popolazione) {
 	for (unsigned short i = 0; i < popolazione.size(); i++) {
