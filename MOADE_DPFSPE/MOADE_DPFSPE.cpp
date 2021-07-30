@@ -144,15 +144,32 @@ void MOADE_DPFSPE::mutazione(Individuo& individuo, double pM) {
 	
 	//Muta velocità
 	if (genRand.randDouble(0, 1) < pM) {
-		r1 = genRand.randIntU(0, g->modulo2->dimensione - 1);
-		tmp = g->modulo2->individuo[r1];
-			
-		r2 = genRand.randIntU(0, istanza.nVelocita - 2);
 
-		if (r2 <= tmp)
-			r2++;
+		unsigned short i, j;
+		unsigned int pos = 0;
 
-		g->modulo2->individuo[r1] = r2;
+		for (i = 0; i < istanza.lavori; i++) {
+			for (j = 0; j < istanza.macchine; j++) {
+				if (genRand.randDouble(0, 1) < 0.1) {
+
+					pos = i * istanza.macchine + j;
+					tmp = g->modulo2->individuo[pos];
+
+					switch (tmp) {
+						case 0:
+							tmp++;
+							break;
+						case 4:
+							tmp--;
+							break;
+						default:
+							genRand.randDouble(0, 1) < 0.5 ? tmp++ : tmp--;
+					}
+
+					g->modulo2->individuo[pos] = tmp;
+				}
+			}
+		}
 	}
 }
 
@@ -664,7 +681,8 @@ void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroVa
 
 void MOADE_DPFSPE::ottimizzaEpeggioraMParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche, double differenzaMakespan)
 {
-	unsigned short pos, vel;
+	unsigned vel;
+	unsigned int pos;
 	double tempoReale;
 
 	GruppoPDZN* g = individuo.rappresentazione;
@@ -782,7 +800,8 @@ void MOADE_DPFSPE::ottimizzaEpeggioraMParziale(Individuo& individuo, Coppia<unsi
 
 void MOADE_DPFSPE::ottimizzaEnergiaParziale(Individuo& individuo, Coppia<unsigned short>& posFabbriche) {
 
-	unsigned short pos, vel;
+	unsigned short vel;
+	unsigned int pos;
 	double tempoReale;
 
 	GruppoPDZN* g = individuo.rappresentazione; 
@@ -883,7 +902,7 @@ void MOADE_DPFSPE::ENEH(Individuo& individuo, unsigned int& valutazioniEffettuat
 	double* p = new double[istanza.lavori];
 	unsigned short* ordinamento = new unsigned short[istanza.lavori];
 
-	unsigned short pos;
+	unsigned int pos;
 	//Sommiamo i pij, per i=1...lavori, j = 1...macchine
 	for (unsigned short i = 0; i < istanza.lavori; i++) {
 		p[i] = 0;
@@ -981,7 +1000,7 @@ CoppiaM<double, unsigned short> MOADE_DPFSPE::miglioreInserzione(GruppoPDZN* g, 
 	unsigned short migliorePosizione = 0;
 
 	double tpReale;
-	unsigned short pos;
+	unsigned int pos;
 
 	for (int i = lunghezzaFabbrica - 1; i >= 0; i--) {
 		q[i] = new double[istanza.macchine];
@@ -1008,7 +1027,7 @@ CoppiaM<double, unsigned short> MOADE_DPFSPE::miglioreInserzione(GruppoPDZN* g, 
 	}
 
 	double tpReale2;
-	unsigned short pos2;
+	unsigned int pos2;
 
 	for (unsigned short i = 0; i <= lunghezzaFabbrica; i++) {
 
@@ -1079,7 +1098,8 @@ vector<Coppia<unsigned short>> MOADE_DPFSPE::calcolaPosFabbriche(GruppoPDZN* g) 
 	vector<Coppia<unsigned short>> posFabbriche;
 	posFabbriche.reserve(istanza.fabbriche);
 
-	unsigned short pos = 0, lunghezza;
+	unsigned short lunghezza;
+	unsigned int pos;
 
 	Modulo* m = g->modulo1;
 
