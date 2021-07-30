@@ -16,8 +16,8 @@ int main(int argc, char* argv[])
 	unsigned short T = 10;
 	unsigned int numeroValutazioni = 100000 - (H + 1);
 	double Fmax = 1.;
-	double alphaMin = 0.35;
-	double alphaMax = 0.65;
+	double alphaMin = 0.4;
+	double alphaMax = 0.8;
 	string percorso = "C:/users/edu4r/desktop/test2/20_2_5.txt";
 
 	switch (argc) {
