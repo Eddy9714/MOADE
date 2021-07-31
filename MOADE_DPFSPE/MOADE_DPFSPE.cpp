@@ -674,6 +674,7 @@ void MOADE_DPFSPE::ottimizzaEnergia(Individuo& individuo, unsigned int& numeroVa
 		}
 	}
 
+	numeroValutazioni++;
 	valutaIndividuo(individuo, numeroValutazioni);
 }
 
