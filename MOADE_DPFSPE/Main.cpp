@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 	if (file.is_open()) {
 		
 		file << "Evaluations;H;T;Fmax; Alpha Min;Alpha Max;seed;Time" << endl;
-		file << numeroValutazioni + (H + 1) << ";" << H << ";" << T << ";" << Fmax << ";" << alphaMin << ";" << alphaMax << ";" << seed << ";" << durata.count() << endl << endl;
+		file << numeroValutazioni << ";" << H << ";" << T << ";" << Fmax << ";" << alphaMin << ";" << alphaMax << ";" << seed << ";" << durata.count() << endl << endl;
 
 		for (unsigned short i = 0; i < risultato.size(); i++) {
 			file << risultato[i].punteggio.x << ";";
