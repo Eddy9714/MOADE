@@ -176,7 +176,7 @@ void MOADE_DPFSPE::mutazione(Individuo& individuo, double pM) {
 void MOADE_DPFSPE::aggiorna(vector<Individuo>& popolazione, unsigned short indice, Individuo& risultato, 
 	Coppia<double>& migliori, Coppia<double>& peggiori, unsigned int& valutazioniEffettuate) {
 
-	ottimizzaEnergia(risultato, ++valutazioniEffettuate);
+	ottimizzaEnergia(risultato, valutazioniEffettuate);
 
 	if (risultato.punteggio.x > peggiori.x)
 		peggiori.x = risultato.punteggio.x;
